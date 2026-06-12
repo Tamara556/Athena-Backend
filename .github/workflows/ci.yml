@@ -29,11 +29,8 @@ jobs:
           java-version: '26'
           cache: maven
 
-      - name: Make the Maven Wrapper executable
-        run: chmod +x mvnw
-
       - name: Build and test all modules
-        run: ./mvnw -B -ntp clean verify
+        run: mvn -B -ntp clean verify
 
       - name: Upload test reports
         if: always()
