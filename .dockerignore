@@ -1,0 +1,7 @@
+# Keep the Docker build context small and reproducible.
+**/target/
+.idea/
+.git/
+*.iml
+**/*.log
+postman/

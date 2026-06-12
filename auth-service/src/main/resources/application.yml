@@ -1,0 +1,54 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: auth-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/athena_auth}
+    username: ${SPRING_DATASOURCE_USERNAME:athena}
+    password: ${SPRING_DATASOURCE_PASSWORD:athena}
+  jpa:
+    hibernate:
+      # Liquibase owns the schema; Hibernate only validates the mapping against it.
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+athena:
+  security:
+    jwt:
+      # Override per environment. Must be >= 32 bytes for HS256.
+      secret: ${ATHENA_JWT_SECRET:local-dev-secret-change-me-please-0123456789abcdef}
+      issuer: athena-auth
+      access-token-ttl: 15m
+      refresh-token-ttl: 30d
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+logging:
+  # Empty = human-readable. Set to ecs / logstash / gelf for JSON structured logs.
+  structured:
+    format:
+      console: ${LOGGING_STRUCTURED_FORMAT:}
+  level:
+    com.athena: INFO

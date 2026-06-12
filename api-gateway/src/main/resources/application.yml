@@ -1,0 +1,55 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          # Explicit routes to the three business services, load-balanced via Eureka.
+          routes:
+            - id: auth-service
+              uri: lb://auth-service
+              predicates:
+                - Path=/auth/**
+            - id: user-service
+              uri: lb://user-service
+              predicates:
+                - Path=/users/**
+            - id: progress-service
+              uri: lb://progress-service
+              predicates:
+                - Path=/progress/**
+
+athena:
+  security:
+    jwt:
+      # MUST match auth-service's secret and issuer so tokens verify.
+      secret: ${ATHENA_JWT_SECRET:local-dev-secret-change-me-please-0123456789abcdef}
+      issuer: athena-auth
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+logging:
+  structured:
+    format:
+      console: ${LOGGING_STRUCTURED_FORMAT:}
+  level:
+    com.athena: INFO

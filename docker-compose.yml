@@ -1,0 +1,158 @@
+# Athena Backend — full local stack.
+#
+#   docker compose up --build
+#
+# Each business service owns its OWN Postgres instance (no shared DB).
+# The gateway is the only port you normally call from outside: http://localhost:8080
+name: athena
+
+x-jwt-secret: &jwt-secret "local-dev-secret-change-me-please-0123456789abcdef"
+
+services:
+
+  # ---------- Infrastructure ----------
+  discovery-server:
+    build:
+      context: .
+      dockerfile: discovery-server/Dockerfile
+    container_name: athena-discovery
+    environment:
+      EUREKA_HOSTNAME: discovery-server
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8761/actuator/health | grep -q UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  auth-db:
+    image: postgres:17-alpine
+    container_name: athena-auth-db
+    environment:
+      POSTGRES_DB: athena_auth
+      POSTGRES_USER: athena
+      POSTGRES_PASSWORD: athena
+    ports:
+      - "5433:5432"
+    volumes:
+      - auth-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U athena -d athena_auth"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  user-db:
+    image: postgres:17-alpine
+    container_name: athena-user-db
+    environment:
+      POSTGRES_DB: athena_user
+      POSTGRES_USER: athena
+      POSTGRES_PASSWORD: athena
+    ports:
+      - "5434:5432"
+    volumes:
+      - user-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U athena -d athena_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  progress-db:
+    image: postgres:17-alpine
+    container_name: athena-progress-db
+    environment:
+      POSTGRES_DB: athena_progress
+      POSTGRES_USER: athena
+      POSTGRES_PASSWORD: athena
+    ports:
+      - "5435:5432"
+    volumes:
+      - progress-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U athena -d athena_progress"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ---------- Business services ----------
+  auth-service:
+    build:
+      context: .
+      dockerfile: auth-service/Dockerfile
+    container_name: athena-auth-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://auth-db:5432/athena_auth
+      SPRING_DATASOURCE_USERNAME: athena
+      SPRING_DATASOURCE_PASSWORD: athena
+      EUREKA_URI: http://discovery-server:8761/eureka/
+      ATHENA_JWT_SECRET: *jwt-secret
+      LOGGING_STRUCTURED_FORMAT: ecs
+    ports:
+      - "8081:8081"
+    depends_on:
+      auth-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+
+  user-service:
+    build:
+      context: .
+      dockerfile: user-service/Dockerfile
+    container_name: athena-user-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://user-db:5432/athena_user
+      SPRING_DATASOURCE_USERNAME: athena
+      SPRING_DATASOURCE_PASSWORD: athena
+      EUREKA_URI: http://discovery-server:8761/eureka/
+      LOGGING_STRUCTURED_FORMAT: ecs
+    ports:
+      - "8082:8082"
+    depends_on:
+      user-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+
+  progress-service:
+    build:
+      context: .
+      dockerfile: progress-service/Dockerfile
+    container_name: athena-progress-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://progress-db:5432/athena_progress
+      SPRING_DATASOURCE_USERNAME: athena
+      SPRING_DATASOURCE_PASSWORD: athena
+      EUREKA_URI: http://discovery-server:8761/eureka/
+      LOGGING_STRUCTURED_FORMAT: ecs
+    ports:
+      - "8083:8083"
+    depends_on:
+      progress-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: athena-api-gateway
+    environment:
+      EUREKA_URI: http://discovery-server:8761/eureka/
+      ATHENA_JWT_SECRET: *jwt-secret
+      LOGGING_STRUCTURED_FORMAT: ecs
+    ports:
+      - "8080:8080"
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+
+volumes:
+  auth-db-data:
+  user-db-data:
+  progress-db-data:
