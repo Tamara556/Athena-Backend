@@ -1,15 +1,11 @@
 name: CI
 
-# Build and test the FULL multi-module reactor (athena-common + discovery-server +
-# api-gateway + auth/user/progress services) on every pull request targeting master,
-# and again on master after a merge.
 on:
   pull_request:
     branches: [ master ]
   push:
     branches: [ master ]
 
-# Cancel an in-flight run when new commits are pushed to the same branch/PR.
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -29,7 +25,6 @@ jobs:
       - name: Set up JDK 26
         uses: actions/setup-java@v4
         with:
-          # Temurin publishes JDK 26 (GA April 2026). Swap to 'oracle' if unavailable.
           distribution: temurin
           java-version: '26'
           cache: maven
@@ -38,8 +33,6 @@ jobs:
         run: chmod +x mvnw
 
       - name: Build and test all modules
-        # 'verify' compiles every module and runs the unit + slice tests (Surefire).
-        # No Postgres/Docker needed — tests use H2, Mockito, and MockMvc/WebFlux slices.
         run: ./mvnw -B -ntp clean verify
 
       - name: Upload test reports
