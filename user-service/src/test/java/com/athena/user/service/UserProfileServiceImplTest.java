@@ -7,6 +7,7 @@ import com.athena.user.dto.UpdateUserProfileRequest;
 import com.athena.user.dto.UserProfileResponse;
 import com.athena.user.entity.UserProfile;
 import com.athena.user.repository.UserProfileRepository;
+import com.athena.user.service.impl.UserProfileServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

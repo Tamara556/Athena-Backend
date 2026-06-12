@@ -25,10 +25,6 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * Persistent credential record. This entity never leaves the service layer; the
- * API only ever exposes DTOs.
- */
 @Entity
 @Table(name = "user_account", uniqueConstraints = @UniqueConstraint(name = "uk_user_account_email", columnNames = "email"))
 @Getter

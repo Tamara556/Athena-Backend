@@ -20,8 +20,9 @@ services:
       EUREKA_HOSTNAME: discovery-server
     ports:
       - "8761:8761"
+    # The temurin JRE image has no wget/curl, so probe the port with bash's /dev/tcp.
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8761/actuator/health | grep -q UP || exit 1"]
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/8761"]
       interval: 10s
       timeout: 5s
       retries: 12
@@ -97,7 +98,7 @@ services:
       auth-db:
         condition: service_healthy
       discovery-server:
-        condition: service_healthy
+        condition: service_started
 
   user-service:
     build:
@@ -116,7 +117,7 @@ services:
       user-db:
         condition: service_healthy
       discovery-server:
-        condition: service_healthy
+        condition: service_started
 
   progress-service:
     build:
@@ -135,7 +136,7 @@ services:
       progress-db:
         condition: service_healthy
       discovery-server:
-        condition: service_healthy
+        condition: service_started
 
   api-gateway:
     build:
@@ -150,7 +151,7 @@ services:
       - "8080:8080"
     depends_on:
       discovery-server:
-        condition: service_healthy
+        condition: service_started
 
 volumes:
   auth-db-data:

@@ -5,10 +5,6 @@ import com.athena.user.dto.UpdateUserProfileRequest;
 import com.athena.user.dto.UserProfileResponse;
 import com.athena.user.entity.UserProfile;
 
-/**
- * Pure mapping between the {@link UserProfile} entity and its DTOs. Keeping this
- * isolated guarantees entities never leak past the service boundary.
- */
 public final class UserProfileMapper {
 
     private UserProfileMapper() {

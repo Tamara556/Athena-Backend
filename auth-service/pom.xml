@@ -48,6 +48,11 @@
             <artifactId>spring-security-crypto</artifactId>
         </dependency>
 
+        <!-- Boot 4 extracted Liquibase auto-config into its own module; liquibase-core alone is not enough. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-liquibase</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>

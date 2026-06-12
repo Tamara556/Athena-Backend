@@ -8,11 +8,9 @@ import java.time.Clock;
 @Configuration
 public class ProgressConfig {
 
-    /**
-     * Injecting a {@link Clock} keeps streak/date logic deterministic and testable.
-     */
     @Bean
     public Clock clock() {
         return Clock.systemUTC();
     }
+
 }

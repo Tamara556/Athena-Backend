@@ -14,14 +14,6 @@ import org.springframework.web.context.request.WebRequest;
 
 import java.util.List;
 
-/**
- * Centralised, reusable exception-to-HTTP mapping. Each servlet service exposes
- * this behaviour by declaring a tiny {@code @RestControllerAdvice} subclass, so
- * the actual mapping logic lives in exactly one place.
- *
- * <p>Designed to be framework-light: it depends only on Spring Web (no servlet
- * API), so the {@link WebRequest} abstraction is used to recover the request path.
- */
 public abstract class GlobalExceptionHandler {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
@@ -38,7 +30,6 @@ public abstract class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<ApiError> handleInvalidCredentials(InvalidCredentialsException ex, WebRequest request) {
-        // Do not log the message at WARN with details that could aid enumeration.
         log.warn("Authentication failure at {}", path(request));
         return build(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
     }
@@ -78,7 +69,6 @@ public abstract class GlobalExceptionHandler {
     }
 
     private String path(WebRequest request) {
-        // WebRequest descriptions look like "uri=/users/1"; strip the prefix.
         String description = request.getDescription(false);
         return description.startsWith("uri=") ? description.substring(4) : description;
     }

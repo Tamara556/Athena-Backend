@@ -14,10 +14,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
-/**
- * Cumulative learning progress for a user (one row per user). Per-day detail
- * lives in {@link DailyProgress}; this entity holds running totals and streak.
- */
 @Entity
 @Table(name = "learning_progress")
 @Getter

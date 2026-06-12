@@ -23,17 +23,6 @@ import reactor.core.publisher.Mono;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-/**
- * Central authentication for every request entering Athena.
- *
- * <ul>
- *   <li>Public paths (auth + actuator health) pass through untouched.</li>
- *   <li>Protected paths require a valid {@code Bearer} access token; on success
- *       the verified identity is forwarded downstream via trusted headers.</li>
- *   <li>Client-supplied identity headers are always stripped first, so they can
- *       never be spoofed.</li>
- * </ul>
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -70,10 +59,12 @@ public class JwtAuthenticationFilter implements WebFilter, Ordered {
     }
 
     private boolean isPublic(String path) {
+        if (path.equals("/actuator")) {
+            return true; // actuator index
+        }
         return PUBLIC_PATH_PREFIXES.stream().anyMatch(path::startsWith);
     }
 
-    /** Removes any inbound identity headers a client may have tried to inject. */
     private ServerWebExchange withoutClientIdentity(ServerWebExchange exchange) {
         ServerHttpRequest mutated = exchange.getRequest().mutate()
                 .headers(headers -> {
@@ -107,7 +98,6 @@ public class JwtAuthenticationFilter implements WebFilter, Ordered {
 
     @Override
     public int getOrder() {
-        // Run before routing so identity headers are set prior to proxying.
         return Ordered.HIGHEST_PRECEDENCE + 10;
     }
 }

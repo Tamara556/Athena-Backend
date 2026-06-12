@@ -1,4 +1,4 @@
-package com.athena.progress.service;
+package com.athena.progress.service.impl;
 
 import com.athena.common.exception.ResourceNotFoundException;
 import com.athena.progress.client.UserClient;
@@ -9,6 +9,7 @@ import com.athena.progress.entity.DailyProgress;
 import com.athena.progress.entity.LearningProgress;
 import com.athena.progress.repository.DailyProgressRepository;
 import com.athena.progress.repository.LearningProgressRepository;
+import com.athena.progress.service.ProgressService;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -105,10 +106,6 @@ public class ProgressServiceImpl implements ProgressService {
         dailyProgressRepository.save(daily);
     }
 
-    /**
-     * Streak rules: first ever activity → 1; another activity the same day → unchanged;
-     * consecutive day → +1; a gap → reset to 1. Longest streak is tracked alongside.
-     */
     private void applyStreak(LearningProgress progress, LocalDate today) {
         LocalDate last = progress.getLastActivityDate();
         int streak;
@@ -125,15 +122,15 @@ public class ProgressServiceImpl implements ProgressService {
         progress.setLongestStreak(Math.max(progress.getLongestStreak(), streak));
     }
 
-    private ProgressResponse toResponse(LearningProgress p) {
+    private ProgressResponse toResponse(LearningProgress learningProgress) {
         return new ProgressResponse(
-                p.getUserId(),
-                p.getTotalCompletedTasks(),
-                p.getTotalMinutes(),
-                p.getCurrentStreak(),
-                p.getLongestStreak(),
-                p.getLastActivityDate(),
-                p.getCreatedAt(),
-                p.getUpdatedAt());
+                learningProgress.getUserId(),
+                learningProgress.getTotalCompletedTasks(),
+                learningProgress.getTotalMinutes(),
+                learningProgress.getCurrentStreak(),
+                learningProgress.getLongestStreak(),
+                learningProgress.getLastActivityDate(),
+                learningProgress.getCreatedAt(),
+                learningProgress.getUpdatedAt());
     }
 }

@@ -8,7 +8,6 @@ spring:
     gateway:
       server:
         webflux:
-          # Explicit routes to the three business services, load-balanced via Eureka.
           routes:
             - id: auth-service
               uri: lb://auth-service
@@ -26,7 +25,6 @@ spring:
 athena:
   security:
     jwt:
-      # MUST match auth-service's secret and issuer so tokens verify.
       secret: ${ATHENA_JWT_SECRET:local-dev-secret-change-me-please-0123456789abcdef}
       issuer: athena-auth
 
@@ -46,6 +44,8 @@ management:
     health:
       probes:
         enabled: true
+    gateway:
+      access: read-only
 
 logging:
   structured:

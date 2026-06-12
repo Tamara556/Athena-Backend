@@ -10,7 +10,6 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD:athena}
   jpa:
     hibernate:
-      # Liquibase owns the schema; Hibernate only validates the mapping against it.
       ddl-auto: validate
     open-in-view: false
     properties:
@@ -22,8 +21,6 @@ spring:
 athena:
   security:
     jwt:
-      # Override per environment. Must be >= 32 bytes for HS256.
-      secret: ${ATHENA_JWT_SECRET:local-dev-secret-change-me-please-0123456789abcdef}
       issuer: athena-auth
       access-token-ttl: 15m
       refresh-token-ttl: 30d
@@ -46,7 +43,6 @@ management:
         enabled: true
 
 logging:
-  # Empty = human-readable. Set to ecs / logstash / gelf for JSON structured logs.
   structured:
     format:
       console: ${LOGGING_STRUCTURED_FORMAT:}

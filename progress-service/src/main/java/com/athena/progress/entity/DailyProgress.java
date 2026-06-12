@@ -14,10 +14,6 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.util.UUID;
 
-/**
- * One row per user per calendar day, accumulating that day's activity. Backs the
- * weekly summary.
- */
 @Entity
 @Table(
         name = "daily_progress",

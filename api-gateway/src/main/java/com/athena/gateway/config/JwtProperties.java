@@ -7,11 +7,6 @@ import org.springframework.validation.annotation.Validated;
 
 import java.time.Duration;
 
-/**
- * The gateway only <em>verifies</em> tokens, so it shares the Auth Service's
- * {@code secret} and {@code issuer}. The TTLs are unused for verification but
- * kept for symmetry with the issuer's configuration.
- */
 @Validated
 @ConfigurationProperties(prefix = "athena.security.jwt")
 public record JwtProperties(

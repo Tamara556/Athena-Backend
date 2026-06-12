@@ -13,11 +13,6 @@ import lombok.Setter;
 import java.time.Instant;
 import java.util.UUID;
 
-/**
- * Learning profile for a user. The primary key {@code userId} is the identity
- * issued by the Auth Service, giving a 1:1 mapping between an auth account and
- * its profile without a synthetic key.
- */
 @Entity
 @Table(name = "user_profile")
 @Getter

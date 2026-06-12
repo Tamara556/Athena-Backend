@@ -1,4 +1,4 @@
-package com.athena.auth.service;
+package com.athena.auth.service.impl;
 
 import com.athena.auth.domain.Role;
 import com.athena.auth.dto.AuthResponse;
@@ -7,6 +7,7 @@ import com.athena.auth.dto.RefreshRequest;
 import com.athena.auth.dto.RegisterRequest;
 import com.athena.auth.entity.UserAccount;
 import com.athena.auth.repository.UserAccountRepository;
+import com.athena.auth.service.AuthService;
 import com.athena.common.exception.DuplicateResourceException;
 import com.athena.common.exception.InvalidCredentialsException;
 import com.athena.common.security.JwtService;
@@ -78,8 +79,6 @@ public class AuthServiceImpl implements AuthService {
         }
 
         UUID userId = UUID.fromString(jwtService.extractSubject(claims));
-        // Re-load the account so rotated tokens always carry current roles, and a
-        // deleted account can no longer refresh.
         UserAccount account = userAccountRepository.findById(userId)
                 .orElseThrow(() -> new InvalidCredentialsException("Account no longer exists"));
 

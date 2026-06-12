@@ -7,10 +7,6 @@ import org.springframework.validation.annotation.Validated;
 
 import java.time.Duration;
 
-/**
- * Binds the {@code athena.security.jwt.*} configuration. The secret is mandatory
- * and must be supplied per environment (never hard-coded in production).
- */
 @Validated
 @ConfigurationProperties(prefix = "athena.security.jwt")
 public record JwtProperties(
