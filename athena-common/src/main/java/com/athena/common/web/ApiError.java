@@ -3,18 +3,6 @@ package com.athena.common.web;
 import java.time.Instant;
 import java.util.List;
 
-/**
- * Uniform error contract returned by every Athena service. Keeping this in the
- * shared module guarantees clients see an identical error shape regardless of
- * which service produced it.
- *
- * @param timestamp when the error was produced (UTC)
- * @param status    HTTP status code
- * @param error     HTTP reason phrase
- * @param message   human-readable, client-safe description
- * @param path      request path that produced the error
- * @param details   optional field-level validation errors (may be empty)
- */
 public record ApiError(
         Instant timestamp,
         int status,

@@ -13,14 +13,6 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Stateless HMAC-SHA256 JWT factory and verifier shared by the Auth Service
- * (which signs tokens) and the API Gateway (which verifies them).
- *
- * <p>The class is intentionally framework-agnostic so it can be reused by both
- * the servlet-based services and the reactive gateway. Wiring into Spring is
- * each module's responsibility (see each module's {@code config} package).
- */
 public class JwtService {
 
     private static final String CLAIM_ROLES = "roles";
@@ -64,12 +56,6 @@ public class JwtService {
                 .compact();
     }
 
-    /**
-     * Parses and cryptographically verifies a token, additionally asserting it
-     * is of the expected {@link TokenType}.
-     *
-     * @throws JwtException if the signature, issuer, expiry, or token type is invalid
-     */
     public Claims parseAndValidate(String token, TokenType expectedType) {
         Jws<Claims> jws = Jwts.parser()
                 .verifyWith(signingKey)

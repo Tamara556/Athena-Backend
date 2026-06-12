@@ -1,4 +1,4 @@
-package com.athena.user.service;
+package com.athena.user.service.impl;
 
 import com.athena.common.exception.DuplicateResourceException;
 import com.athena.common.exception.ResourceNotFoundException;
@@ -8,6 +8,7 @@ import com.athena.user.dto.UserProfileResponse;
 import com.athena.user.entity.UserProfile;
 import com.athena.user.mapper.UserProfileMapper;
 import com.athena.user.repository.UserProfileRepository;
+import com.athena.user.service.UserProfileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

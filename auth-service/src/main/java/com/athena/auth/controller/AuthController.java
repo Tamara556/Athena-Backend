@@ -14,10 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Thin HTTP adapter: validates input and delegates to {@link AuthService}.
- * Contains no business logic.
- */
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor

@@ -7,6 +7,7 @@ import com.athena.auth.dto.RefreshRequest;
 import com.athena.auth.dto.RegisterRequest;
 import com.athena.auth.entity.UserAccount;
 import com.athena.auth.repository.UserAccountRepository;
+import com.athena.auth.service.impl.AuthServiceImpl;
 import com.athena.common.exception.DuplicateResourceException;
 import com.athena.common.exception.InvalidCredentialsException;
 import com.athena.common.security.JwtService;

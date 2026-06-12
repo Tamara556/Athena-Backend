@@ -9,13 +9,11 @@ eureka:
   instance:
     hostname: ${EUREKA_HOSTNAME:localhost}
   client:
-    # A registry does not register with, or fetch from, itself.
     register-with-eureka: false
     fetch-registry: false
     service-url:
       defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
   server:
-    # Disable self-preservation in dev so de-registration is prompt.
     enable-self-preservation: false
 
 management:

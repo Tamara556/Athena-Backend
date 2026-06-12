@@ -9,6 +9,7 @@ import com.athena.progress.entity.DailyProgress;
 import com.athena.progress.entity.LearningProgress;
 import com.athena.progress.repository.DailyProgressRepository;
 import com.athena.progress.repository.LearningProgressRepository;
+import com.athena.progress.service.impl.ProgressServiceImpl;
 import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

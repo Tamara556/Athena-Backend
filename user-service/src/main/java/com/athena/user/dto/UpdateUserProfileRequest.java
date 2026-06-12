@@ -7,10 +7,6 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-/**
- * Full-representation update (PUT semantics): all mutable fields are replaced.
- * The identity ({@code userId}) is taken from the path, never the body.
- */
 public record UpdateUserProfileRequest(
 
         @NotBlank(message = "name is required")
