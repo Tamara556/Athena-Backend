@@ -47,6 +47,23 @@
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
 
+        <!-- V2: Kafka (consume TaskCompletedEvent, publish StreakUpdatedEvent).
+             Boot 4: the starter pulls in spring-boot-kafka auto-config. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-kafka</artifactId>
+        </dependency>
+        <!-- V2: Redis cache for progress/stats -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <!-- V2: distributed tracing -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-brave</artifactId>
+        </dependency>
+
         <!-- Boot 4 extracted Liquibase auto-config into its own module; liquibase-core alone is not enough. -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -1,6 +1,7 @@
 package com.athena.user.controller;
 
 import com.athena.common.exception.ResourceNotFoundException;
+import com.athena.user.constants.UserConstants;
 import com.athena.user.dto.UserProfileResponse;
 import com.athena.user.service.UserProfileService;
 import org.junit.jupiter.api.Test;
@@ -75,7 +76,7 @@ class UserControllerTest {
     @Test
     void getById_returns404WhenMissing() throws Exception {
         when(userProfileService.getById(any()))
-                .thenThrow(ResourceNotFoundException.of("User profile", USER_ID));
+                .thenThrow(ResourceNotFoundException.of(UserConstants.RESOURCE_NAME, USER_ID));
 
         mockMvc.perform(get("/users/{id}", USER_ID))
                 .andExpect(status().isNotFound())

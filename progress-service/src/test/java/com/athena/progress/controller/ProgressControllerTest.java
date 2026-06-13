@@ -1,6 +1,7 @@
 package com.athena.progress.controller;
 
 import com.athena.common.exception.ResourceNotFoundException;
+import com.athena.progress.constants.ProgressConstants;
 import com.athena.progress.dto.ProgressResponse;
 import com.athena.progress.dto.WeeklySummaryResponse;
 import com.athena.progress.service.ProgressService;
@@ -53,7 +54,7 @@ class ProgressControllerTest {
     @Test
     void getProgress_returns404WhenMissing() throws Exception {
         when(progressService.getProgress(any()))
-                .thenThrow(ResourceNotFoundException.of("Progress", USER_ID));
+                .thenThrow(ResourceNotFoundException.of(ProgressConstants.RESOURCE_NAME, USER_ID));
 
         mockMvc.perform(get("/progress/{userId}", USER_ID))
                 .andExpect(status().isNotFound());

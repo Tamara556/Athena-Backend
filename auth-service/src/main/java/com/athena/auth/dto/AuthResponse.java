@@ -5,6 +5,9 @@ import java.util.UUID;
 
 public record AuthResponse(
         UUID userId,
+        String username,
+        String firstName,
+        String lastName,
         String email,
         Set<String> roles,
         String tokenType,

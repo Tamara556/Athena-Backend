@@ -1,0 +1,90 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-seed-badges
+      author: athena
+      comment: Seed the fixed badge catalogue (matches BadgeCode enum).
+      changes:
+        - insert:
+            tableName: badge
+            columns:
+              - { column: { name: id, valueComputed: gen_random_uuid() } }
+              - { column: { name: code, value: FIRST_TASK } }
+              - { column: { name: name, value: First Task } }
+              - { column: { name: description, value: Complete your very first learning task } }
+              - { column: { name: icon, value: "🎯" } }
+              - { column: { name: created_at, valueComputed: CURRENT_TIMESTAMP } }
+        - insert:
+            tableName: badge
+            columns:
+              - { column: { name: id, valueComputed: gen_random_uuid() } }
+              - { column: { name: code, value: TASKS_10 } }
+              - { column: { name: name, value: 10 Tasks } }
+              - { column: { name: description, value: Complete 10 learning tasks } }
+              - { column: { name: icon, value: "🔟" } }
+              - { column: { name: created_at, valueComputed: CURRENT_TIMESTAMP } }
+        - insert:
+            tableName: badge
+            columns:
+              - { column: { name: id, valueComputed: gen_random_uuid() } }
+              - { column: { name: code, value: TASKS_50 } }
+              - { column: { name: name, value: 50 Tasks } }
+              - { column: { name: description, value: Complete 50 learning tasks } }
+              - { column: { name: icon, value: "⭐" } }
+              - { column: { name: created_at, valueComputed: CURRENT_TIMESTAMP } }
+        - insert:
+            tableName: badge
+            columns:
+              - { column: { name: id, valueComputed: gen_random_uuid() } }
+              - { column: { name: code, value: TASKS_100 } }
+              - { column: { name: name, value: 100 Tasks } }
+              - { column: { name: description, value: Complete 100 learning tasks } }
+              - { column: { name: icon, value: "💯" } }
+              - { column: { name: created_at, valueComputed: CURRENT_TIMESTAMP } }
+        - insert:
+            tableName: badge
+            columns:
+              - { column: { name: id, valueComputed: gen_random_uuid() } }
+              - { column: { name: code, value: STREAK_7 } }
+              - { column: { name: name, value: 7-Day Streak } }
+              - { column: { name: description, value: Learn 7 days in a row } }
+              - { column: { name: icon, value: "🔥" } }
+              - { column: { name: created_at, valueComputed: CURRENT_TIMESTAMP } }
+        - insert:
+            tableName: badge
+            columns:
+              - { column: { name: id, valueComputed: gen_random_uuid() } }
+              - { column: { name: code, value: STREAK_14 } }
+              - { column: { name: name, value: 14-Day Streak } }
+              - { column: { name: description, value: Learn 14 days in a row } }
+              - { column: { name: icon, value: "🔥" } }
+              - { column: { name: created_at, valueComputed: CURRENT_TIMESTAMP } }
+        - insert:
+            tableName: badge
+            columns:
+              - { column: { name: id, valueComputed: gen_random_uuid() } }
+              - { column: { name: code, value: STREAK_30 } }
+              - { column: { name: name, value: 30-Day Streak } }
+              - { column: { name: description, value: Learn 30 days in a row } }
+              - { column: { name: icon, value: "🏆" } }
+              - { column: { name: created_at, valueComputed: CURRENT_TIMESTAMP } }
+        - insert:
+            tableName: badge
+            columns:
+              - { column: { name: id, valueComputed: gen_random_uuid() } }
+              - { column: { name: code, value: STREAK_100 } }
+              - { column: { name: name, value: 100-Day Streak } }
+              - { column: { name: description, value: Learn 100 days in a row } }
+              - { column: { name: icon, value: "👑" } }
+              - { column: { name: created_at, valueComputed: CURRENT_TIMESTAMP } }
+        - insert:
+            tableName: badge
+            columns:
+              - { column: { name: id, valueComputed: gen_random_uuid() } }
+              - { column: { name: code, value: FIRST_PLAN_COMPLETED } }
+              - { column: { name: name, value: First Plan Completed } }
+              - { column: { name: description, value: Finish every task in a learning plan } }
+              - { column: { name: icon, value: "📘" } }
+              - { column: { name: created_at, valueComputed: CURRENT_TIMESTAMP } }
+        - rollback:
+            - delete:
+                tableName: badge

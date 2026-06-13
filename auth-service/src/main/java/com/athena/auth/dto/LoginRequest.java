@@ -1,15 +1,14 @@
 package com.athena.auth.dto;
 
-import jakarta.validation.constraints.Email;
+import com.athena.auth.constants.AuthConstants;
 import jakarta.validation.constraints.NotBlank;
 
 public record LoginRequest(
 
-        @NotBlank(message = "email is required")
-        @Email(message = "email must be a valid address")
-        String email,
+        @NotBlank(message = AuthConstants.LOGIN_REQUIRED)
+        String login,
 
-        @NotBlank(message = "password is required")
+        @NotBlank(message = AuthConstants.PASSWORD_REQUIRED)
         String password
 ) {
 }

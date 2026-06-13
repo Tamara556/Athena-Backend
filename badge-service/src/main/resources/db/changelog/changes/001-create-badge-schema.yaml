@@ -1,0 +1,85 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-badge
+      author: athena
+      changes:
+        - createTable:
+            tableName: badge
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_badge
+                    nullable: false
+              - column:
+                  name: code
+                  type: varchar(40)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: varchar(500)
+              - column:
+                  name: icon
+                  type: varchar(40)
+              - column:
+                  name: created_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: badge
+            columnNames: code
+            constraintName: uk_badge_code
+  - changeSet:
+      id: 002-create-user-badge
+      author: athena
+      changes:
+        - createTable:
+            tableName: user_badge
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_user_badge
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: badge_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: awarded_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: user_badge
+            baseColumnNames: badge_id
+            referencedTableName: badge
+            referencedColumnNames: id
+            constraintName: fk_user_badge_badge
+        - addUniqueConstraint:
+            tableName: user_badge
+            columnNames: user_id, badge_id
+            constraintName: uk_user_badge
+        - createIndex:
+            tableName: user_badge
+            indexName: idx_user_badge_user
+            columns:
+              - column:
+                  name: user_id

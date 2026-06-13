@@ -1,0 +1,232 @@
+{
+  "info": {
+    "name": "Athena Backend (V2)",
+    "description": "V2 learning engine + gamification, all via the gateway (http://localhost:8080).\n\nFlow: Register -> Create Profile -> Create Plan -> Create Task -> Complete Task.\nCompleting a task publishes a Kafka event; within a second or two GET Progress/me shows updated metrics and GET Badges/me shows earned badges.\n\nRegister/Login auto-store the token + userId; Create Plan/Task auto-store planId/taskId.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" },
+    { "key": "userId", "value": "" },
+    { "key": "planId", "value": "" },
+    { "key": "taskId", "value": "" },
+    { "key": "sessionId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "const r = pm.response.json();",
+            "pm.collectionVariables.set('accessToken', r.accessToken);",
+            "pm.collectionVariables.set('refreshToken', r.refreshToken);",
+            "pm.collectionVariables.set('userId', r.userId);",
+            "pm.test('201', () => pm.response.to.have.status(201));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"firstName\": \"Ada\",\n  \"lastName\": \"Lovelace\",\n  \"username\": \"ada\",\n  \"email\": \"learner@example.com\",\n  \"password\": \"Password123!\"\n}" }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "const r = pm.response.json();",
+            "pm.collectionVariables.set('accessToken', r.accessToken);",
+            "pm.collectionVariables.set('refreshToken', r.refreshToken);",
+            "pm.collectionVariables.set('userId', r.userId);"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"login\": \"ada\",\n  \"password\": \"Password123!\"\n}" }
+          }
+        },
+        {
+          "name": "Refresh",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/refresh", "host": ["{{baseUrl}}"], "path": ["auth", "refresh"] },
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] },
+            "body": { "mode": "raw", "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"name\": \"Ada\",\n  \"age\": 30,\n  \"goal\": \"Master distributed systems\",\n  \"dailyStudyHours\": 2.5\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Learning",
+      "item": [
+        {
+          "name": "Create Plan",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.collectionVariables.set('planId', pm.response.json().id);"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/plans", "host": ["{{baseUrl}}"], "path": ["plans"] },
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Java Mastery\",\n  \"description\": \"Become fluent in modern Java\"\n}" }
+          }
+        },
+        {
+          "name": "Get Plan",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/plans/{{planId}}", "host": ["{{baseUrl}}"], "path": ["plans", "{{planId}}"] }
+          }
+        },
+        {
+          "name": "List My Plans",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/users/{{userId}}/plans", "host": ["{{baseUrl}}"], "path": ["users", "{{userId}}", "plans"] }
+          }
+        },
+        {
+          "name": "Create Task",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.collectionVariables.set('taskId', pm.response.json().id);"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/tasks", "host": ["{{baseUrl}}"], "path": ["tasks"] },
+            "body": { "mode": "raw", "raw": "{\n  \"planId\": \"{{planId}}\",\n  \"title\": \"Read chapter 1\",\n  \"description\": \"Intro\",\n  \"taskType\": \"READING\",\n  \"estimatedMinutes\": 30\n}" }
+          }
+        },
+        {
+          "name": "Get Task",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/tasks/{{taskId}}", "host": ["{{baseUrl}}"], "path": ["tasks", "{{taskId}}"] }
+          }
+        },
+        {
+          "name": "Start Session",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.collectionVariables.set('sessionId', pm.response.json().id);"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/sessions/start", "host": ["{{baseUrl}}"], "path": ["sessions", "start"] },
+            "body": { "mode": "raw", "raw": "{\n  \"taskId\": \"{{taskId}}\"\n}" }
+          }
+        },
+        {
+          "name": "End Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/sessions/end", "host": ["{{baseUrl}}"], "path": ["sessions", "end"] },
+            "body": { "mode": "raw", "raw": "{\n  \"sessionId\": \"{{sessionId}}\"\n}" }
+          }
+        },
+        {
+          "name": "Complete Task (triggers event chain)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/tasks/{{taskId}}/complete", "host": ["{{baseUrl}}"], "path": ["tasks", "{{taskId}}", "complete"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Progress",
+      "item": [
+        {
+          "name": "My Progress",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/progress/me", "host": ["{{baseUrl}}"], "path": ["progress", "me"] }
+          }
+        },
+        {
+          "name": "Progress By User",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/progress/{{userId}}", "host": ["{{baseUrl}}"], "path": ["progress", "{{userId}}"] }
+          }
+        },
+        {
+          "name": "Weekly Summary",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/progress/summary/{{userId}}", "host": ["{{baseUrl}}"], "path": ["progress", "summary", "{{userId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Badges",
+      "item": [
+        {
+          "name": "All Badges (catalogue)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/badges", "host": ["{{baseUrl}}"], "path": ["badges"] }
+          }
+        },
+        {
+          "name": "My Badges",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/badges/me", "host": ["{{baseUrl}}"], "path": ["badges", "me"] }
+          }
+        },
+        {
+          "name": "User Badges",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/users/{{userId}}/badges", "host": ["{{baseUrl}}"], "path": ["users", "{{userId}}", "badges"] }
+          }
+        }
+      ]
+    }
+  ]
+}
