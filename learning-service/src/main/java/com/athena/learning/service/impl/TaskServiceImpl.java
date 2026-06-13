@@ -2,6 +2,7 @@ package com.athena.learning.service.impl;
 
 import com.athena.common.event.TaskCompletedEvent;
 import com.athena.common.exception.ResourceNotFoundException;
+import com.athena.learning.constants.LearningConstants;
 import com.athena.learning.domain.TaskStatus;
 import com.athena.learning.dto.CreateTaskRequest;
 import com.athena.learning.dto.TaskResponse;
@@ -35,7 +36,7 @@ public class TaskServiceImpl implements TaskService {
     @Transactional
     public TaskResponse create(CreateTaskRequest request) {
         if (!planRepository.existsById(request.planId())) {
-            throw ResourceNotFoundException.of("Learning plan", request.planId());
+            throw ResourceNotFoundException.of(LearningConstants.LEARNING_PLAN_RESOURCE, request.planId());
         }
         LearningTask saved = taskRepository.save(LearningMapper.toEntity(request));
         log.info("Created task taskId={} planId={}", saved.getId(), saved.getPlanId());
@@ -47,14 +48,14 @@ public class TaskServiceImpl implements TaskService {
     public TaskResponse getById(UUID taskId) {
         return taskRepository.findById(taskId)
                 .map(LearningMapper::toResponse)
-                .orElseThrow(() -> ResourceNotFoundException.of("Learning task", taskId));
+                .orElseThrow(() -> ResourceNotFoundException.of(LearningConstants.LEARNING_TASK_RESOURCE, taskId));
     }
 
     @Override
     @Transactional
     public TaskResponse complete(UUID taskId) {
         LearningTask task = taskRepository.findById(taskId)
-                .orElseThrow(() -> ResourceNotFoundException.of("Learning task", taskId));
+                .orElseThrow(() -> ResourceNotFoundException.of(LearningConstants.LEARNING_TASK_RESOURCE, taskId));
 
         if (task.isCompleted()) {
             log.info("Task taskId={} already completed; skipping re-publish", taskId);
@@ -62,7 +63,7 @@ public class TaskServiceImpl implements TaskService {
         }
 
         LearningPlan plan = planRepository.findById(task.getPlanId())
-                .orElseThrow(() -> ResourceNotFoundException.of("Learning plan", task.getPlanId()));
+                .orElseThrow(() -> ResourceNotFoundException.of(LearningConstants.LEARNING_PLAN_RESOURCE, task.getPlanId()));
 
         Instant now = clock.instant();
         task.setStatus(TaskStatus.COMPLETED);

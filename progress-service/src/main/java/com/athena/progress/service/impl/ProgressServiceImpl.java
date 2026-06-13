@@ -2,6 +2,7 @@ package com.athena.progress.service.impl;
 
 import com.athena.common.exception.ResourceNotFoundException;
 import com.athena.progress.client.UserClient;
+import com.athena.progress.constants.ProgressConstants;
 import com.athena.progress.dto.ProgressResponse;
 import com.athena.progress.dto.ProgressUpdateRequest;
 import com.athena.progress.dto.WeeklySummaryResponse;
@@ -28,9 +29,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ProgressServiceImpl implements ProgressService {
 
-    private static final int WEEK_DAYS = 7;
-    private static final String RESOURCE = "Progress";
-
     private final LearningProgressRepository progressRepository;
     private final DailyProgressRepository dailyProgressRepository;
     private final UserClient userClient;
@@ -42,7 +40,7 @@ public class ProgressServiceImpl implements ProgressService {
     public ProgressResponse getProgress(UUID userId) {
         return progressRepository.findById(userId)
                 .map(this::toResponse)
-                .orElseThrow(() -> ResourceNotFoundException.of(RESOURCE, userId));
+                .orElseThrow(() -> ResourceNotFoundException.of(ProgressConstants.RESOURCE_NAME, userId));
     }
 
     @Override
@@ -72,10 +70,10 @@ public class ProgressServiceImpl implements ProgressService {
     @Transactional(readOnly = true)
     public WeeklySummaryResponse weeklySummary(UUID userId) {
         LearningProgress progress = progressRepository.findById(userId)
-                .orElseThrow(() -> ResourceNotFoundException.of(RESOURCE, userId));
+                .orElseThrow(() -> ResourceNotFoundException.of(ProgressConstants.RESOURCE_NAME, userId));
 
         LocalDate today = LocalDate.now(clock);
-        LocalDate weekStart = today.minusDays(WEEK_DAYS - 1L);
+        LocalDate weekStart = today.minusDays(ProgressConstants.WEEK_DAYS - 1L);
         List<DailyProgress> entries =
                 dailyProgressRepository.findByUserIdAndDateBetweenOrderByDateAsc(userId, weekStart, today);
 
@@ -99,7 +97,7 @@ public class ProgressServiceImpl implements ProgressService {
         try {
             userClient.getUser(userId);
         } catch (FeignException.NotFound ex) {
-            throw new ResourceNotFoundException("Cannot track progress: user " + userId + " does not exist");
+            throw new ResourceNotFoundException(ProgressConstants.USER_NOT_FOUND_FOR_PROGRESS.formatted(userId));
         }
     }
 

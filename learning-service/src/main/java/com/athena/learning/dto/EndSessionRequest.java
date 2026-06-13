@@ -1,12 +1,13 @@
 package com.athena.learning.dto;
 
+import com.athena.learning.constants.LearningConstants;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;
 
 public record EndSessionRequest(
 
-        @NotNull(message = "sessionId is required")
+        @NotNull(message = LearningConstants.SESSION_ID_REQUIRED)
         UUID sessionId
 ) {
 }

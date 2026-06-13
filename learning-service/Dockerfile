@@ -1,4 +1,3 @@
-# Build context MUST be the repository root (parent POM + athena-common reactor).
 FROM eclipse-temurin:26-jdk AS build
 WORKDIR /workspace
 COPY . .

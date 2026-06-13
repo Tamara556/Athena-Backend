@@ -1,5 +1,6 @@
 package com.athena.learning.dto;
 
+import com.athena.learning.constants.LearningConstants;
 import com.athena.learning.domain.TaskType;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -11,21 +12,21 @@ import java.util.UUID;
 
 public record CreateTaskRequest(
 
-        @NotNull(message = "planId is required")
+        @NotNull(message = LearningConstants.PLAN_ID_REQUIRED)
         UUID planId,
 
-        @NotBlank(message = "title is required")
-        @Size(max = 150, message = "title must be at most 150 characters")
+        @NotBlank(message = LearningConstants.TITLE_REQUIRED)
+        @Size(max = LearningConstants.TITLE_MAX_LENGTH, message = LearningConstants.TITLE_MAX_LENGTH_MESSAGE)
         String title,
 
-        @Size(max = 2000, message = "description must be at most 2000 characters")
+        @Size(max = LearningConstants.DESCRIPTION_MAX_LENGTH, message = LearningConstants.DESCRIPTION_MAX_LENGTH_MESSAGE)
         String description,
 
-        @NotNull(message = "taskType is required")
+        @NotNull(message = LearningConstants.TASK_TYPE_REQUIRED)
         TaskType taskType,
 
-        @Min(value = 1, message = "estimatedMinutes must be at least 1")
-        @Max(value = 1440, message = "estimatedMinutes cannot exceed one day (1440)")
+        @Min(value = LearningConstants.ESTIMATED_MINUTES_MIN, message = LearningConstants.ESTIMATED_MINUTES_MIN_MESSAGE)
+        @Max(value = LearningConstants.MAX_MINUTES_PER_DAY, message = LearningConstants.ESTIMATED_MINUTES_MAX_MESSAGE)
         int estimatedMinutes
 ) {
 }

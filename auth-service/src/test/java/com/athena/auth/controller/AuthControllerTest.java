@@ -1,5 +1,6 @@
 package com.athena.auth.controller;
 
+import com.athena.auth.constants.AuthConstants;
 import com.athena.auth.dto.AuthResponse;
 import com.athena.auth.service.AuthService;
 import com.athena.common.exception.InvalidCredentialsException;
@@ -101,7 +102,7 @@ class AuthControllerTest {
 
     @Test
     void login_returns401OnInvalidCredentials() throws Exception {
-        when(authService.login(any())).thenThrow(new InvalidCredentialsException("Invalid login or password"));
+        when(authService.login(any())).thenThrow(new InvalidCredentialsException(AuthConstants.INVALID_CREDENTIALS));
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

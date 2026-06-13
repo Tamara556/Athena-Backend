@@ -2,6 +2,7 @@ package com.athena.learning.service.impl;
 
 import com.athena.common.event.LearningPlanCreatedEvent;
 import com.athena.common.exception.ResourceNotFoundException;
+import com.athena.learning.constants.LearningConstants;
 import com.athena.learning.dto.CreatePlanRequest;
 import com.athena.learning.dto.PlanResponse;
 import com.athena.learning.entity.LearningPlan;
@@ -40,7 +41,7 @@ public class PlanServiceImpl implements PlanService {
     public PlanResponse getById(UUID planId) {
         return planRepository.findById(planId)
                 .map(LearningMapper::toResponse)
-                .orElseThrow(() -> ResourceNotFoundException.of("Learning plan", planId));
+                .orElseThrow(() -> ResourceNotFoundException.of(LearningConstants.LEARNING_PLAN_RESOURCE, planId));
     }
 
     @Override

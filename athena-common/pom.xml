@@ -34,12 +34,6 @@
             <artifactId>jakarta.validation-api</artifactId>
         </dependency>
 
-        <!--
-          Spring Web is 'provided': it gives the shared GlobalExceptionHandler base
-          class access to ResponseEntity / @ExceptionHandler at compile time without
-          forcing the dependency onto the reactive gateway (provided scope is not
-          transitive). Servlet services already bring spring-webmvc at runtime.
-        -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
@@ -50,8 +44,7 @@
             <artifactId>spring-webmvc</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!-- ServletRequestBindingException's superclass lives here; provided so it
-             stays off the reactive gateway's classpath. -->
+
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
@@ -76,7 +69,6 @@
         </dependency>
     </dependencies>
 
-    <!-- Plain library: no Spring Boot repackaging -->
     <build>
         <plugins>
             <plugin>

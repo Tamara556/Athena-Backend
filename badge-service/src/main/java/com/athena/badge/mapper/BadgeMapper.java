@@ -7,9 +7,6 @@ import com.athena.badge.entity.UserBadge;
 
 public final class BadgeMapper {
 
-    private BadgeMapper() {
-    }
-
     public static BadgeResponse toResponse(Badge badge) {
         return new BadgeResponse(badge.getCode(), badge.getName(), badge.getDescription(), badge.getIcon());
     }

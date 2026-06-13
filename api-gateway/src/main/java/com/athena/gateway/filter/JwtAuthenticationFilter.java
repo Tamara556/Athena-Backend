@@ -60,7 +60,7 @@ public class JwtAuthenticationFilter implements WebFilter, Ordered {
 
     private boolean isPublic(String path) {
         if (path.equals("/actuator")) {
-            return true; // actuator index
+            return true;
         }
         return PUBLIC_PATH_PREFIXES.stream().anyMatch(path::startsWith);
     }

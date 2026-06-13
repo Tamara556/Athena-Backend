@@ -14,10 +14,6 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
 
-/**
- * Consumes {@link TaskCompletedEvent}, updates the user's metrics/streak, then
- * publishes a {@link StreakUpdatedEvent} for badge-service to react to.
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -33,7 +29,6 @@ public class ProgressEventConsumer {
         log.info("Received TaskCompletedEvent userId={} taskId={} minutes={}",
                 event.userId(), event.taskId(), event.durationMinutes());
 
-        // One completed task contributes 1 to the task count and its minutes to learning time.
         ProgressResponse progress = progressService.update(
                 new ProgressUpdateRequest(event.userId(), 1, event.durationMinutes()));
 

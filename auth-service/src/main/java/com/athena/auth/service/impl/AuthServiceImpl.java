@@ -1,5 +1,6 @@
 package com.athena.auth.service.impl;
 
+import com.athena.auth.constants.AuthConstants;
 import com.athena.auth.domain.Role;
 import com.athena.auth.dto.AuthResponse;
 import com.athena.auth.dto.LoginRequest;
@@ -30,8 +31,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    private static final String INVALID_CREDENTIALS = "Invalid login or password";
-
     private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -43,10 +42,10 @@ public class AuthServiceImpl implements AuthService {
         String username = normalizeUsername(request.username());
 
         if (userAccountRepository.existsByEmailIgnoreCase(email)) {
-            throw new DuplicateResourceException("An account with this email already exists");
+            throw new DuplicateResourceException(AuthConstants.EMAIL_ALREADY_EXISTS);
         }
         if (userAccountRepository.existsByUsernameIgnoreCase(username)) {
-            throw new DuplicateResourceException("This username is already taken");
+            throw new DuplicateResourceException(AuthConstants.USERNAME_ALREADY_TAKEN);
         }
 
         UserAccount account = new UserAccount();
@@ -68,10 +67,10 @@ public class AuthServiceImpl implements AuthService {
         String identifier = request.login().trim().toLowerCase();
         UserAccount account = userAccountRepository
                 .findByEmailIgnoreCaseOrUsernameIgnoreCase(identifier, identifier)
-                .orElseThrow(() -> new InvalidCredentialsException(INVALID_CREDENTIALS));
+                .orElseThrow(() -> new InvalidCredentialsException(AuthConstants.INVALID_CREDENTIALS));
 
         if (!passwordEncoder.matches(request.password(), account.getPasswordHash())) {
-            throw new InvalidCredentialsException(INVALID_CREDENTIALS);
+            throw new InvalidCredentialsException(AuthConstants.INVALID_CREDENTIALS);
         }
 
         log.info("Login success userId={}", account.getId());
@@ -85,12 +84,12 @@ public class AuthServiceImpl implements AuthService {
         try {
             claims = jwtService.parseAndValidate(request.refreshToken(), TokenType.REFRESH);
         } catch (JwtException | IllegalArgumentException ex) {
-            throw new InvalidCredentialsException("Refresh token is invalid or expired");
+            throw new InvalidCredentialsException(AuthConstants.REFRESH_TOKEN_INVALID);
         }
 
         UUID userId = UUID.fromString(jwtService.extractSubject(claims));
         UserAccount account = userAccountRepository.findById(userId)
-                .orElseThrow(() -> new InvalidCredentialsException("Account no longer exists"));
+                .orElseThrow(() -> new InvalidCredentialsException(AuthConstants.ACCOUNT_NO_LONGER_EXISTS));
 
         log.info("Refreshed tokens userId={}", account.getId());
         return buildAuthResponse(account);

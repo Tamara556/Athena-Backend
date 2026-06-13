@@ -1,5 +1,6 @@
 package com.athena.auth.dto;
 
+import com.athena.auth.constants.AuthConstants;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -7,30 +8,28 @@ import jakarta.validation.constraints.Size;
 
 public record RegisterRequest(
 
-        @NotBlank(message = "firstName is required")
-        @Size(max = 100, message = "firstName must be at most 100 characters")
+        @NotBlank(message = AuthConstants.FIRST_NAME_REQUIRED)
+        @Size(max = AuthConstants.FIRST_NAME_MAX_LENGTH, message = AuthConstants.FIRST_NAME_MAX_LENGTH_MESSAGE)
         String firstName,
 
-        @NotBlank(message = "lastName is required")
-        @Size(max = 100, message = "lastName must be at most 100 characters")
+        @NotBlank(message = AuthConstants.LAST_NAME_REQUIRED)
+        @Size(max = AuthConstants.LAST_NAME_MAX_LENGTH, message = AuthConstants.LAST_NAME_MAX_LENGTH_MESSAGE)
         String lastName,
 
-        @NotBlank(message = "username is required")
-        @Pattern(
-                regexp = "^[A-Za-z0-9._-]{3,50}$",
-                message = "username must be 3-50 characters: letters, digits, dot, underscore or hyphen")
+        @NotBlank(message = AuthConstants.USERNAME_REQUIRED)
+        @Pattern(regexp = AuthConstants.USERNAME_PATTERN, message = AuthConstants.USERNAME_PATTERN_MESSAGE)
         String username,
 
-        @NotBlank(message = "email is required")
-        @Email(message = "email must be a valid address")
+        @NotBlank(message = AuthConstants.EMAIL_REQUIRED)
+        @Email(message = AuthConstants.EMAIL_INVALID)
         String email,
 
-        @NotBlank(message = "password is required")
-        @Size(min = 8, max = 72, message = "password must be between 8 and 72 characters")
-        @Pattern(
-                regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9\\s]).{8,72}$",
-                message = "password must contain at least one uppercase letter, one lowercase letter, "
-                        + "one digit and one symbol")
+        @NotBlank(message = AuthConstants.PASSWORD_REQUIRED)
+        @Size(
+                min = AuthConstants.PASSWORD_MIN_LENGTH,
+                max = AuthConstants.PASSWORD_MAX_LENGTH,
+                message = AuthConstants.PASSWORD_SIZE_MESSAGE)
+        @Pattern(regexp = AuthConstants.PASSWORD_PATTERN, message = AuthConstants.PASSWORD_COMPLEXITY_MESSAGE)
         String password
 ) {
 }

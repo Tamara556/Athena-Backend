@@ -58,19 +58,19 @@ public class BadgeServiceImpl implements BadgeService {
         Set<String> alreadyEarned = userBadgeRepository.findEarnedCodesByUserId(userId);
         List<BadgeResponse> newlyAwarded = new ArrayList<>();
 
-        for (BadgeCode code : qualified) {
+        qualified.forEach(code -> {
             if (alreadyEarned.contains(code.name())) {
-                continue;
+                return;
             }
             Badge badge = badgeRepository.findByCode(code.name()).orElse(null);
             if (badge == null) {
                 log.warn("No badge row seeded for code={}; skipping", code);
-                continue;
+                return;
             }
             userBadgeRepository.save(new UserBadge(userId, badge));
             newlyAwarded.add(BadgeMapper.toResponse(badge));
             log.info("Awarded badge {} to userId={}", code, userId);
-        }
+        });
         return newlyAwarded;
     }
 }

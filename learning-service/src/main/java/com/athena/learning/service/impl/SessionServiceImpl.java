@@ -1,6 +1,7 @@
 package com.athena.learning.service.impl;
 
 import com.athena.common.exception.ResourceNotFoundException;
+import com.athena.learning.constants.LearningConstants;
 import com.athena.learning.domain.TaskStatus;
 import com.athena.learning.dto.EndSessionRequest;
 import com.athena.learning.dto.SessionResponse;
@@ -32,9 +33,8 @@ public class SessionServiceImpl implements SessionService {
     @Transactional
     public SessionResponse start(UUID userId, StartSessionRequest request) {
         LearningTask task = taskRepository.findById(request.taskId())
-                .orElseThrow(() -> ResourceNotFoundException.of("Learning task", request.taskId()));
+                .orElseThrow(() -> ResourceNotFoundException.of(LearningConstants.LEARNING_TASK_RESOURCE, request.taskId()));
 
-        // Starting work on a pending task moves it to IN_PROGRESS.
         if (task.getStatus() == TaskStatus.PENDING) {
             task.setStatus(TaskStatus.IN_PROGRESS);
             taskRepository.save(task);
@@ -50,7 +50,7 @@ public class SessionServiceImpl implements SessionService {
     @Transactional
     public SessionResponse end(EndSessionRequest request) {
         LearningSession session = sessionRepository.findById(request.sessionId())
-                .orElseThrow(() -> ResourceNotFoundException.of("Learning session", request.sessionId()));
+                .orElseThrow(() -> ResourceNotFoundException.of(LearningConstants.LEARNING_SESSION_RESOURCE, request.sessionId()));
 
         if (!session.isEnded()) {
             session.end(clock.instant());
