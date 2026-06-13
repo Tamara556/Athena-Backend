@@ -1,9 +1,10 @@
-# Athena Backend — full local stack.
+# Athena Backend — full local stack (V2: + Kafka, Redis, Learning & Badge services).
 #
 #   docker compose up --build
 #
 # Each business service owns its OWN Postgres instance (no shared DB).
 # The gateway is the only port you normally call from outside: http://localhost:8080
+# Kafka is reachable from the host on localhost:29092 (services use kafka:9092 internally).
 name: athena
 
 x-jwt-secret: &jwt-secret "local-dev-secret-change-me-please-0123456789abcdef"
@@ -20,13 +21,48 @@ services:
       EUREKA_HOSTNAME: discovery-server
     ports:
       - "8761:8761"
-    # The temurin JRE image has no wget/curl, so probe the port with bash's /dev/tcp.
     healthcheck:
       test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/8761"]
       interval: 10s
       timeout: 5s
       retries: 12
       start_period: 30s
+
+  kafka:
+    image: apache/kafka:3.9.1
+    container_name: athena-kafka
+    ports:
+      - "29092:29092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    container_name: athena-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   auth-db:
     image: postgres:17-alpine
@@ -75,6 +111,40 @@ services:
       - progress-db-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U athena -d athena_progress"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  learning-db:
+    image: postgres:17-alpine
+    container_name: athena-learning-db
+    environment:
+      POSTGRES_DB: athena_learning
+      POSTGRES_USER: athena
+      POSTGRES_PASSWORD: athena
+    ports:
+      - "5436:5432"
+    volumes:
+      - learning-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U athena -d athena_learning"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  badge-db:
+    image: postgres:17-alpine
+    container_name: athena-badge-db
+    environment:
+      POSTGRES_DB: athena_badge
+      POSTGRES_USER: athena
+      POSTGRES_PASSWORD: athena
+    ports:
+      - "5437:5432"
+    volumes:
+      - badge-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U athena -d athena_badge"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -129,6 +199,8 @@ services:
       SPRING_DATASOURCE_USERNAME: athena
       SPRING_DATASOURCE_PASSWORD: athena
       EUREKA_URI: http://discovery-server:8761/eureka/
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_DATA_REDIS_HOST: redis
       LOGGING_STRUCTURED_FORMAT: ecs
     ports:
       - "8083:8083"
@@ -136,6 +208,57 @@ services:
       progress-db:
         condition: service_healthy
       discovery-server:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  learning-service:
+    build:
+      context: .
+      dockerfile: learning-service/Dockerfile
+    container_name: athena-learning-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://learning-db:5432/athena_learning
+      SPRING_DATASOURCE_USERNAME: athena
+      SPRING_DATASOURCE_PASSWORD: athena
+      EUREKA_URI: http://discovery-server:8761/eureka/
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      LOGGING_STRUCTURED_FORMAT: ecs
+    ports:
+      - "8084:8084"
+    depends_on:
+      learning-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+
+  badge-service:
+    build:
+      context: .
+      dockerfile: badge-service/Dockerfile
+    container_name: athena-badge-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://badge-db:5432/athena_badge
+      SPRING_DATASOURCE_USERNAME: athena
+      SPRING_DATASOURCE_PASSWORD: athena
+      EUREKA_URI: http://discovery-server:8761/eureka/
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_DATA_REDIS_HOST: redis
+      LOGGING_STRUCTURED_FORMAT: ecs
+    ports:
+      - "8085:8085"
+    depends_on:
+      badge-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+      redis:
         condition: service_started
 
   api-gateway:
@@ -157,3 +280,5 @@ volumes:
   auth-db-data:
   user-db-data:
   progress-db-data:
+  learning-db-data:
+  badge-db-data:

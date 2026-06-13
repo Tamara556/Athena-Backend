@@ -13,6 +13,14 @@ spring:
               uri: lb://auth-service
               predicates:
                 - Path=/auth/**
+            - id: user-plans
+              uri: lb://learning-service
+              predicates:
+                - Path=/users/*/plans
+            - id: user-badges
+              uri: lb://badge-service
+              predicates:
+                - Path=/users/*/badges
             - id: user-service
               uri: lb://user-service
               predicates:
@@ -21,6 +29,22 @@ spring:
               uri: lb://progress-service
               predicates:
                 - Path=/progress/**
+            - id: learning-plans
+              uri: lb://learning-service
+              predicates:
+                - Path=/plans/**
+            - id: learning-tasks
+              uri: lb://learning-service
+              predicates:
+                - Path=/tasks/**
+            - id: learning-sessions
+              uri: lb://learning-service
+              predicates:
+                - Path=/sessions/**
+            - id: badge-service
+              uri: lb://badge-service
+              predicates:
+                - Path=/badges/**
 
 athena:
   security:

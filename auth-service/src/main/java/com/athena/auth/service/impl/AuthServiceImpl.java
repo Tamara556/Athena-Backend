@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    private static final String INVALID_CREDENTIALS = "Invalid email or password";
+    private static final String INVALID_CREDENTIALS = "Invalid login or password";
 
     private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
@@ -40,24 +40,34 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         String email = normalizeEmail(request.email());
+        String username = normalizeUsername(request.username());
+
         if (userAccountRepository.existsByEmailIgnoreCase(email)) {
             throw new DuplicateResourceException("An account with this email already exists");
         }
+        if (userAccountRepository.existsByUsernameIgnoreCase(username)) {
+            throw new DuplicateResourceException("This username is already taken");
+        }
 
         UserAccount account = new UserAccount();
+        account.setFirstName(request.firstName().trim());
+        account.setLastName(request.lastName().trim());
+        account.setUsername(username);
         account.setEmail(email);
         account.setPasswordHash(passwordEncoder.encode(request.password()));
         account.addRole(Role.USER);
 
         UserAccount saved = userAccountRepository.save(account);
-        log.info("Registered new account userId={}", saved.getId());
+        log.info("Registered new account userId={} username={}", saved.getId(), username);
         return buildAuthResponse(saved);
     }
 
     @Override
     @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
-        UserAccount account = userAccountRepository.findByEmailIgnoreCase(normalizeEmail(request.email()))
+        String identifier = request.login().trim().toLowerCase();
+        UserAccount account = userAccountRepository
+                .findByEmailIgnoreCaseOrUsernameIgnoreCase(identifier, identifier)
                 .orElseThrow(() -> new InvalidCredentialsException(INVALID_CREDENTIALS));
 
         if (!passwordEncoder.matches(request.password(), account.getPasswordHash())) {
@@ -96,6 +106,9 @@ public class AuthServiceImpl implements AuthService {
 
         return new AuthResponse(
                 account.getId(),
+                account.getUsername(),
+                account.getFirstName(),
+                account.getLastName(),
                 account.getEmail(),
                 roleSet,
                 "Bearer",
@@ -106,5 +119,9 @@ public class AuthServiceImpl implements AuthService {
 
     private String normalizeEmail(String email) {
         return email.trim().toLowerCase();
+    }
+
+    private String normalizeUsername(String username) {
+        return username.trim().toLowerCase();
     }
 }

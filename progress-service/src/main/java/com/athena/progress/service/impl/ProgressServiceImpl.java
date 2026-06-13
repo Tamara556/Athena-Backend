@@ -13,6 +13,8 @@ import com.athena.progress.service.ProgressService;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +37,7 @@ public class ProgressServiceImpl implements ProgressService {
     private final Clock clock;
 
     @Override
+    @Cacheable(value = "progress", key = "#userId")
     @Transactional(readOnly = true)
     public ProgressResponse getProgress(UUID userId) {
         return progressRepository.findById(userId)
@@ -43,6 +46,7 @@ public class ProgressServiceImpl implements ProgressService {
     }
 
     @Override
+    @CacheEvict(value = "progress", key = "#request.userId()")
     @Transactional
     public ProgressResponse update(ProgressUpdateRequest request) {
         LocalDate today = LocalDate.now(clock);

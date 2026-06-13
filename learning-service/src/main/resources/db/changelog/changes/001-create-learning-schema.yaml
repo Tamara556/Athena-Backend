@@ -1,0 +1,146 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-learning-plan
+      author: athena
+      changes:
+        - createTable:
+            tableName: learning_plan
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_learning_plan
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: title
+                  type: varchar(150)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: varchar(2000)
+              - column:
+                  name: created_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+        - createIndex:
+            tableName: learning_plan
+            indexName: idx_learning_plan_user
+            columns:
+              - column:
+                  name: user_id
+  - changeSet:
+      id: 002-create-learning-task
+      author: athena
+      changes:
+        - createTable:
+            tableName: learning_task
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_learning_task
+                    nullable: false
+              - column:
+                  name: plan_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: title
+                  type: varchar(150)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: varchar(2000)
+              - column:
+                  name: task_type
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: estimated_minutes
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: completed_at
+                  type: timestamp with time zone
+              - column:
+                  name: created_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: learning_task
+            baseColumnNames: plan_id
+            referencedTableName: learning_plan
+            referencedColumnNames: id
+            constraintName: fk_task_plan
+            onDelete: CASCADE
+        - createIndex:
+            tableName: learning_task
+            indexName: idx_learning_task_plan
+            columns:
+              - column:
+                  name: plan_id
+  - changeSet:
+      id: 003-create-learning-session
+      author: athena
+      changes:
+        - createTable:
+            tableName: learning_session
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_learning_session
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: task_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: started_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+              - column:
+                  name: completed_at
+                  type: timestamp with time zone
+              - column:
+                  name: duration_minutes
+                  type: bigint
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+        - createIndex:
+            tableName: learning_session
+            indexName: idx_learning_session_user
+            columns:
+              - column:
+                  name: user_id

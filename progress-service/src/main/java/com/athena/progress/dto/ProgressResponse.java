@@ -1,5 +1,6 @@
 package com.athena.progress.dto;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -13,5 +14,5 @@ public record ProgressResponse(
         LocalDate lastActivityDate,
         Instant createdAt,
         Instant updatedAt
-) {
+) implements Serializable {
 }

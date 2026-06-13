@@ -1,0 +1,54 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-add-user-identity-fields
+      author: athena
+      comment: Add first_name, last_name and unique username to user_account.
+      changes:
+        # 1) Add as nullable so the change is safe against existing rows.
+        - addColumn:
+            tableName: user_account
+            columns:
+              - column:
+                  name: first_name
+                  type: varchar(100)
+              - column:
+                  name: last_name
+                  type: varchar(100)
+              - column:
+                  name: username
+                  type: varchar(50)
+        # 2) Backfill any pre-existing rows. username stays unique via the id.
+        - update:
+            tableName: user_account
+            columns:
+              - column:
+                  name: username
+                  valueComputed: "concat('user_', id)"
+            where: username IS NULL
+        - update:
+            tableName: user_account
+            columns:
+              - column:
+                  name: first_name
+                  value: ""
+              - column:
+                  name: last_name
+                  value: ""
+            where: first_name IS NULL
+        # 3) Now enforce the constraints.
+        - addNotNullConstraint:
+            tableName: user_account
+            columnName: first_name
+            columnDataType: varchar(100)
+        - addNotNullConstraint:
+            tableName: user_account
+            columnName: last_name
+            columnDataType: varchar(100)
+        - addNotNullConstraint:
+            tableName: user_account
+            columnName: username
+            columnDataType: varchar(50)
+        - addUniqueConstraint:
+            tableName: user_account
+            columnNames: username
+            constraintName: uk_user_account_username

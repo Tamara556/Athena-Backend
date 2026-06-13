@@ -106,7 +106,7 @@ This starts the Eureka registry, three Postgres instances, all three services, a
 # Register (returns access + refresh tokens and your userId)
 curl -s -X POST http://localhost:8080/auth/register \
   -H 'Content-Type: application/json' \
-  -d '{"email":"ada@example.com","password":"password123"}'
+  -d '{"email":"ada@example.com","password":"Password123!"}'
 ```
 
 Tear down (and wipe data):
@@ -158,7 +158,7 @@ BASE=http://localhost:8080
 
 # 1) Register and capture token + id
 RESP=$(curl -s -X POST $BASE/auth/register -H 'Content-Type: application/json' \
-  -d '{"email":"ada@example.com","password":"password123"}')
+  -d '{"email":"ada@example.com","password":"Password123!"}')
 TOKEN=$(echo "$RESP" | jq -r .accessToken)
 UID=$(echo "$RESP" | jq -r .userId)
 

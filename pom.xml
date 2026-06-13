@@ -25,6 +25,8 @@
         <module>auth-service</module>
         <module>user-service</module>
         <module>progress-service</module>
+        <module>learning-service</module>
+        <module>badge-service</module>
     </modules>
 
     <properties>

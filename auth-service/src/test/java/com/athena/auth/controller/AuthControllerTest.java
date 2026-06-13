@@ -31,6 +31,9 @@ class AuthControllerTest {
     private AuthResponse sampleResponse() {
         return new AuthResponse(
                 UUID.fromString("11111111-1111-1111-1111-111111111111"),
+                "ada",
+                "Ada",
+                "Lovelace",
                 "user@example.com",
                 Set.of("USER"),
                 "Bearer",
@@ -46,8 +49,9 @@ class AuthControllerTest {
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email":"user@example.com","password":"password123"}"""))
+                                {"firstName":"Ada","lastName":"Lovelace","username":"ada","email":"user@example.com","password":"Password123!"}"""))
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.username").value("ada"))
                 .andExpect(jsonPath("$.accessToken").value("access-token"))
                 .andExpect(jsonPath("$.tokenType").value("Bearer"));
     }
@@ -57,10 +61,30 @@ class AuthControllerTest {
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email":"user@example.com","password":"short"}"""))
+                                {"firstName":"Ada","lastName":"Lovelace","username":"ada","email":"user@example.com","password":"short"}"""))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.details[0].field").value("password"));
+    }
+
+    @Test
+    void register_returns400WhenPasswordLacksComplexity() throws Exception {
+        mockMvc.perform(post("/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"firstName":"Ada","lastName":"Lovelace","username":"ada","email":"user@example.com","password":"alllowercase"}"""))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.details[0].field").value("password"));
+    }
+
+    @Test
+    void register_returns400WhenUsernameInvalid() throws Exception {
+        mockMvc.perform(post("/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"firstName":"Ada","lastName":"Lovelace","username":"a b","email":"user@example.com","password":"Password123!"}"""))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.details[0].field").value("username"));
     }
 
     @Test
@@ -70,19 +94,19 @@ class AuthControllerTest {
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email":"user@example.com","password":"password123"}"""))
+                                {"login":"ada","password":"Password123!"}"""))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userId").value("11111111-1111-1111-1111-111111111111"));
     }
 
     @Test
     void login_returns401OnInvalidCredentials() throws Exception {
-        when(authService.login(any())).thenThrow(new InvalidCredentialsException("Invalid email or password"));
+        when(authService.login(any())).thenThrow(new InvalidCredentialsException("Invalid login or password"));
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email":"user@example.com","password":"password123"}"""))
+                                {"login":"user@example.com","password":"Password123!"}"""))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value(401));
     }

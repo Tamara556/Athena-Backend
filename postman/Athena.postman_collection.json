@@ -37,7 +37,7 @@
             "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"ada@example.com\",\n  \"password\": \"password123\"\n}"
+              "raw": "{\n  \"firstName\": \"Ada\",\n  \"lastName\": \"Lovelace\",\n  \"username\": \"ada\",\n  \"email\": \"ada@example.com\",\n  \"password\": \"Password123!\"\n}"
             }
           }
         },
@@ -64,7 +64,7 @@
             "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"ada@example.com\",\n  \"password\": \"password123\"\n}"
+              "raw": "{\n  \"login\": \"ada\",\n  \"password\": \"Password123!\"\n}"
             }
           }
         },
