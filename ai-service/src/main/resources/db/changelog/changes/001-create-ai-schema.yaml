@@ -1,0 +1,101 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-ai-audit
+      author: athena
+      changes:
+        - createTable:
+            tableName: ai_requests
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_ai_requests, nullable: false } }
+              - column: { name: user_id, type: uuid }
+              - column: { name: prompt_type, type: varchar(60), constraints: { nullable: false } }
+              - column: { name: model, type: varchar(80), constraints: { nullable: false } }
+              - column: { name: status, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - createTable:
+            tableName: ai_responses
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_ai_responses, nullable: false } }
+              - column: { name: request_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: latency_ms, type: bigint, constraints: { nullable: false } }
+              - column: { name: total_tokens, type: int, constraints: { nullable: false } }
+              - column: { name: success, type: boolean, constraints: { nullable: false } }
+              - column: { name: error_type, type: varchar(120) }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+  - changeSet:
+      id: 002-create-onboarding
+      author: athena
+      changes:
+        - createTable:
+            tableName: onboarding_sessions
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_onboarding_sessions, nullable: false } }
+              - column: { name: user_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: first_name, type: varchar(255) }
+              - column: { name: status, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: goal_text, type: varchar(1000) }
+              - column: { name: domain, type: varchar(255) }
+              - column: { name: level, type: varchar(40) }
+              - column: { name: estimated_months, type: int }
+              - column: { name: daily_hours, type: double precision }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+              - column: { name: updated_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - createIndex:
+            tableName: onboarding_sessions
+            indexName: idx_onboarding_user
+            columns:
+              - column: { name: user_id }
+        - createTable:
+            tableName: assessments
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_assessments, nullable: false } }
+              - column: { name: session_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: user_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: questions_json, type: text }
+              - column: { name: answers_json, type: text }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - createIndex:
+            tableName: assessments
+            indexName: idx_assessment_session
+            columns:
+              - column: { name: session_id }
+  - changeSet:
+      id: 003-create-generated-artifacts
+      author: athena
+      changes:
+        - createTable:
+            tableName: generated_roadmaps
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_generated_roadmaps, nullable: false } }
+              - column: { name: user_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: session_id, type: uuid }
+              - column: { name: goal, type: varchar(1000), constraints: { nullable: false } }
+              - column: { name: level, type: varchar(40) }
+              - column: { name: content_json, type: text, constraints: { nullable: false } }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - createIndex:
+            tableName: generated_roadmaps
+            indexName: idx_roadmap_user
+            columns:
+              - column: { name: user_id }
+        - createTable:
+            tableName: generated_daily_plans
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_generated_daily_plans, nullable: false } }
+              - column: { name: user_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: roadmap_id, type: uuid }
+              - column: { name: plan_date, type: date, constraints: { nullable: false } }
+              - column: { name: content_json, type: text, constraints: { nullable: false } }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - createIndex:
+            tableName: generated_daily_plans
+            indexName: idx_daily_plan_user
+            columns:
+              - column: { name: user_id }
+        - createTable:
+            tableName: recommendations
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_recommendations, nullable: false } }
+              - column: { name: user_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: content, type: text, constraints: { nullable: false } }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }

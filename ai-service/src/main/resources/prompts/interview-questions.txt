@@ -1,0 +1,11 @@
+Generate a weekly assessment ("interview") for a learner.
+
+Domain: "{{domain}}"
+Current level: {{level}}
+
+Produce 4 to 6 questions mixing types: THEORY (conceptual), PRACTICAL (a small task to
+perform/describe) and SCENARIO (apply knowledge to a situation). Keep them specific to
+the domain and the level.
+
+Respond with JSON of this exact shape:
+{"questions":[{"type":"THEORY|PRACTICAL|SCENARIO","question":"..."}]}

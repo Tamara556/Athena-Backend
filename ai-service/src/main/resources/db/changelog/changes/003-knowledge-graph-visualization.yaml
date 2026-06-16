@@ -1,0 +1,54 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007-add-knowledge-node-category
+      author: athena
+      changes:
+        - addColumn:
+            tableName: knowledge_nodes
+            columns:
+              - column:
+                  name: category
+                  type: varchar(40)
+                  defaultValue: CORE
+                  constraints:
+                    nullable: false
+  - changeSet:
+      id: 008-create-knowledge-edges
+      author: athena
+      changes:
+        - createTable:
+            tableName: knowledge_edges
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_knowledge_edges, nullable: false } }
+              - column: { name: user_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: source_skill, type: varchar(120), constraints: { nullable: false } }
+              - column: { name: target_skill, type: varchar(120), constraints: { nullable: false } }
+              - column: { name: relationship_type, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - addUniqueConstraint:
+            tableName: knowledge_edges
+            columnNames: user_id, source_skill, target_skill, relationship_type
+            constraintName: uk_knowledge_edge
+        - createIndex:
+            tableName: knowledge_edges
+            indexName: idx_knowledge_edge_user
+            columns:
+              - column: { name: user_id }
+  - changeSet:
+      id: 009-create-knowledge-graph-snapshots
+      author: athena
+      changes:
+        - createTable:
+            tableName: knowledge_graph_snapshots
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_knowledge_snapshots, nullable: false } }
+              - column: { name: user_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: generated_at, type: timestamp with time zone, constraints: { nullable: false } }
+              - column: { name: average_mastery, type: int, constraints: { nullable: false } }
+              - column: { name: serialized_graph, type: text, constraints: { nullable: false } }
+        - createIndex:
+            tableName: knowledge_graph_snapshots
+            indexName: idx_knowledge_snapshot_user
+            columns:
+              - column: { name: user_id }
+              - column: { name: generated_at }

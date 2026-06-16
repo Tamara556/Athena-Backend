@@ -27,6 +27,8 @@
         <module>progress-service</module>
         <module>learning-service</module>
         <module>badge-service</module>
+        <module>ai-service</module>
+        <module>interview-service</module>
     </modules>
 
     <properties>

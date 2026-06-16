@@ -1,0 +1,13 @@
+Build a personalized learning roadmap.
+
+Goal: "{{goal}}"
+Current level: {{level}}
+Daily available hours: {{dailyHours}}
+Known prerequisites: {{prerequisites}}
+
+Produce 4 to 6 sequential phases appropriate to THIS domain, each with a short name,
+a one-sentence description, an estimated duration in weeks, and 3-6 concrete
+objectives. Order from foundational to advanced.
+
+Respond with JSON of this exact shape:
+{"phases":[{"name":"...","description":"...","durationWeeks":4,"objectives":["...","..."]}]}

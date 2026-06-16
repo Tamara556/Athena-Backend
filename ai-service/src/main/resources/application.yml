@@ -1,0 +1,73 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    name: ai-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5438/athena_ai}
+    username: ${SPRING_DATASOURCE_USERNAME:athena}
+    password: ${SPRING_DATASOURCE_PASSWORD:athena}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:29092}
+    consumer:
+      group-id: ai-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      repositories:
+        enabled: false
+  cache:
+    type: redis
+
+athena:
+  ai:
+    base-url: ${ATHENA_AI_BASE_URL:http://localhost:1234/v1}
+    model: ${ATHENA_AI_MODEL:qwen3-14b}
+    connect-timeout: 5s
+    read-timeout: ${ATHENA_AI_READ_TIMEOUT:1200s}
+    max-retries: 2
+    retry-backoff: 2s
+    temperature: 0.4
+    max-tokens: ${ATHENA_AI_MAX_TOKENS:8192}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+
+logging:
+  structured:
+    format:
+      console: ${LOGGING_STRUCTURED_FORMAT:}
+  level:
+    com.athena: INFO

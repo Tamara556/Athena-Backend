@@ -48,6 +48,12 @@
             <artifactId>spring-security-crypto</artifactId>
         </dependency>
 
+        <!-- Publishes UserRegisteredEvent to trigger automatic onboarding -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-kafka</artifactId>
+        </dependency>
+
         <!-- Boot 4 extracted Liquibase auto-config into its own module; liquibase-core alone is not enough. -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

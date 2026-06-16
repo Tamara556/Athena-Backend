@@ -1,0 +1,55 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-add-onboarding-last-name
+      author: athena
+      changes:
+        - addColumn:
+            tableName: onboarding_sessions
+            columns:
+              - column:
+                  name: last_name
+                  type: varchar(255)
+  - changeSet:
+      id: 005-create-knowledge-nodes
+      author: athena
+      changes:
+        - createTable:
+            tableName: knowledge_nodes
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_knowledge_nodes, nullable: false } }
+              - column: { name: user_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: skill_name, type: varchar(120), constraints: { nullable: false } }
+              - column: { name: domain, type: varchar(120) }
+              - column: { name: mastery_percentage, type: int, constraints: { nullable: false } }
+              - column: { name: confidence_score, type: double precision, constraints: { nullable: false } }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+              - column: { name: updated_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - addUniqueConstraint:
+            tableName: knowledge_nodes
+            columnNames: user_id, skill_name
+            constraintName: uk_knowledge_user_skill
+        - createIndex:
+            tableName: knowledge_nodes
+            indexName: idx_knowledge_user
+            columns:
+              - column: { name: user_id }
+  - changeSet:
+      id: 006-create-ai-request-retries
+      author: athena
+      changes:
+        - createTable:
+            tableName: ai_request_retries
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_ai_request_retries, nullable: false } }
+              - column: { name: request_type, type: varchar(60), constraints: { nullable: false } }
+              - column: { name: user_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: payload_reference, type: varchar(255), constraints: { nullable: false } }
+              - column: { name: status, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: retry_count, type: int, defaultValueNumeric: 0, constraints: { nullable: false } }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+              - column: { name: updated_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - createIndex:
+            tableName: ai_request_retries
+            indexName: idx_retry_status
+            columns:
+              - column: { name: status }
