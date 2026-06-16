@@ -36,6 +36,7 @@
         <maven.compiler.release>26</maven.compiler.release>
         <spring-cloud.version>2025.1.1</spring-cloud.version>
         <jjwt.version>0.12.6</jjwt.version>
+        <aws.sdk.version>2.31.0</aws.sdk.version>
         <athena-common.version>1.0.0</athena-common.version>
     </properties>
 
@@ -46,6 +47,15 @@
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
                 <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- AWS SDK v2 BOM (CloudWatch Logs shipping; works against LocalStack) -->
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${aws.sdk.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
