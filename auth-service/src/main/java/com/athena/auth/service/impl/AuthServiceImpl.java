@@ -7,8 +7,10 @@ import com.athena.auth.dto.LoginRequest;
 import com.athena.auth.dto.RefreshRequest;
 import com.athena.auth.dto.RegisterRequest;
 import com.athena.auth.entity.UserAccount;
+import com.athena.auth.messaging.AuthEventPublisher;
 import com.athena.auth.repository.UserAccountRepository;
 import com.athena.auth.service.AuthService;
+import com.athena.common.event.UserRegisteredEvent;
 import com.athena.common.exception.DuplicateResourceException;
 import com.athena.common.exception.InvalidCredentialsException;
 import com.athena.common.security.JwtService;
@@ -34,6 +36,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final AuthEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -58,6 +61,10 @@ public class AuthServiceImpl implements AuthService {
 
         UserAccount saved = userAccountRepository.save(account);
         log.info("Registered new account userId={} username={}", saved.getId(), username);
+
+        eventPublisher.publishUserRegistered(new UserRegisteredEvent(
+                saved.getId(), saved.getFirstName(), saved.getLastName(), saved.getEmail(), java.time.Instant.now()));
+
         return buildAuthResponse(saved);
     }
 

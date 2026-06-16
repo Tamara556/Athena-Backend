@@ -1,0 +1,8 @@
+The learner's goal is: "{{goal}}".
+
+Generate a short adaptive assessment to gauge their CURRENT proficiency in this exact
+domain. Produce 4 to 6 concise questions, ordered from basic to advanced, specific to
+the domain (not generic). Do not include answers.
+
+Respond with JSON of this exact shape:
+{"questions":["question 1","question 2","question 3","question 4"]}

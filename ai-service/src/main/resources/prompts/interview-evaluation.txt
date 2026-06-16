@@ -1,0 +1,10 @@
+Evaluate the learner's interview answers for domain "{{domain}}".
+
+Questions and answers (question -> answer):
+{{qa}}
+
+Assess correctness, completeness and confidence. "score" is 0-100. "passed" is true if
+score >= 70. List concrete "weaknesses" and actionable "recommendations" (each 1-4 items).
+
+Respond with JSON of this exact shape:
+{"score":82,"passed":true,"weaknesses":["..."],"recommendations":["..."]}

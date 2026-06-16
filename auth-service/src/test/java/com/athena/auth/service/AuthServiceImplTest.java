@@ -43,6 +43,8 @@ class AuthServiceImplTest {
     private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
     @Mock
     private JwtService jwtService;
+    @Mock
+    private com.athena.auth.messaging.AuthEventPublisher eventPublisher;
 
     @InjectMocks
     private AuthServiceImpl authService;

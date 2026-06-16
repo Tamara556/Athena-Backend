@@ -149,6 +149,40 @@ services:
       timeout: 5s
       retries: 10
 
+  ai-db:
+    image: postgres:17-alpine
+    container_name: athena-ai-db
+    environment:
+      POSTGRES_DB: athena_ai
+      POSTGRES_USER: athena
+      POSTGRES_PASSWORD: athena
+    ports:
+      - "5438:5432"
+    volumes:
+      - ai-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U athena -d athena_ai"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  interview-db:
+    image: postgres:17-alpine
+    container_name: athena-interview-db
+    environment:
+      POSTGRES_DB: athena_interview
+      POSTGRES_USER: athena
+      POSTGRES_PASSWORD: athena
+    ports:
+      - "5439:5432"
+    volumes:
+      - interview-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U athena -d athena_interview"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   # ---------- Business services ----------
   auth-service:
     build:
@@ -160,6 +194,7 @@ services:
       SPRING_DATASOURCE_USERNAME: athena
       SPRING_DATASOURCE_PASSWORD: athena
       EUREKA_URI: http://discovery-server:8761/eureka/
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       ATHENA_JWT_SECRET: *jwt-secret
       LOGGING_STRUCTURED_FORMAT: ecs
     ports:
@@ -169,6 +204,8 @@ services:
         condition: service_healthy
       discovery-server:
         condition: service_started
+      kafka:
+        condition: service_healthy
 
   user-service:
     build:
@@ -261,6 +298,59 @@ services:
       redis:
         condition: service_started
 
+  ai-service:
+    build:
+      context: .
+      dockerfile: ai-service/Dockerfile
+    container_name: athena-ai-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://ai-db:5432/athena_ai
+      SPRING_DATASOURCE_USERNAME: athena
+      SPRING_DATASOURCE_PASSWORD: athena
+      EUREKA_URI: http://discovery-server:8761/eureka/
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_DATA_REDIS_HOST: redis
+      ATHENA_AI_BASE_URL: ${ATHENA_AI_BASE_URL:-http://host.docker.internal:1234/v1}
+      ATHENA_AI_MODEL: ${ATHENA_AI_MODEL:-qwen3-14b}
+      ATHENA_AI_READ_TIMEOUT: ${ATHENA_AI_READ_TIMEOUT:-1200s}
+      ATHENA_AI_MAX_TOKENS: ${ATHENA_AI_MAX_TOKENS:-8192}
+      LOGGING_STRUCTURED_FORMAT: ecs
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8086:8086"
+    depends_on:
+      ai-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  interview-service:
+    build:
+      context: .
+      dockerfile: interview-service/Dockerfile
+    container_name: athena-interview-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://interview-db:5432/athena_interview
+      SPRING_DATASOURCE_USERNAME: athena
+      SPRING_DATASOURCE_PASSWORD: athena
+      EUREKA_URI: http://discovery-server:8761/eureka/
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      LOGGING_STRUCTURED_FORMAT: ecs
+    ports:
+      - "8087:8087"
+    depends_on:
+      interview-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+
   api-gateway:
     build:
       context: .
@@ -269,6 +359,7 @@ services:
     environment:
       EUREKA_URI: http://discovery-server:8761/eureka/
       ATHENA_JWT_SECRET: *jwt-secret
+      ATHENA_FRONTEND_ORIGIN: ${ATHENA_FRONTEND_ORIGIN:-http://localhost:4200}
       LOGGING_STRUCTURED_FORMAT: ecs
     ports:
       - "8080:8080"
@@ -282,3 +373,5 @@ volumes:
   progress-db-data:
   learning-db-data:
   badge-db-data:
+  ai-db-data:
+  interview-db-data:

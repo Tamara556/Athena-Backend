@@ -1,0 +1,12 @@
+The learner's goal is: "{{goal}}".
+
+Their assessment answers (question -> answer):
+{{answers}}
+
+Analyze where this learner currently stands and estimate the effort to reach the goal.
+"level" must be one of: Beginner, Intermediate, Advanced.
+"dailyHours" is a realistic recommended daily study time in hours.
+"prerequisites" lists 2-5 foundational skills relevant to THIS domain.
+
+Respond with JSON of this exact shape:
+{"domain":"...","level":"Beginner|Intermediate|Advanced","estimatedMonths":12,"dailyHours":3,"prerequisites":["...","..."]}

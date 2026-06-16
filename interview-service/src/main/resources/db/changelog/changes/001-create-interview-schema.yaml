@@ -1,0 +1,55 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-interviews
+      author: athena
+      changes:
+        - createTable:
+            tableName: interviews
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_interviews, nullable: false } }
+              - column: { name: user_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: domain, type: varchar(255), constraints: { nullable: false } }
+              - column: { name: level, type: varchar(40) }
+              - column: { name: status, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - createIndex:
+            tableName: interviews
+            indexName: idx_interview_user
+            columns:
+              - column: { name: user_id }
+        - createTable:
+            tableName: interview_questions
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_interview_questions, nullable: false } }
+              - column: { name: interview_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: type, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: question_text, type: varchar(2000), constraints: { nullable: false } }
+              - column: { name: position, type: int, constraints: { nullable: false } }
+        - addForeignKeyConstraint:
+            baseTableName: interview_questions
+            baseColumnNames: interview_id
+            referencedTableName: interviews
+            referencedColumnNames: id
+            constraintName: fk_question_interview
+            onDelete: CASCADE
+        - createIndex:
+            tableName: interview_questions
+            indexName: idx_question_interview
+            columns:
+              - column: { name: interview_id }
+        - createTable:
+            tableName: interview_results
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_interview_results, nullable: false } }
+              - column: { name: interview_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: user_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: score, type: int, constraints: { nullable: false } }
+              - column: { name: passed, type: boolean, constraints: { nullable: false } }
+              - column: { name: weaknesses_json, type: text }
+              - column: { name: recommendations_json, type: text }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - createIndex:
+            tableName: interview_results
+            indexName: idx_result_interview
+            columns:
+              - column: { name: interview_id }

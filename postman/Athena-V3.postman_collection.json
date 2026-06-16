@@ -1,0 +1,169 @@
+{
+  "info": {
+    "name": "Athena Backend (V3) — Onboarding, Knowledge Graph, AI Badges",
+    "description": "Onboarding now starts AUTOMATICALLY on Register (auth publishes UserRegisteredEvent -> ai-service creates the session). The client just fetches the greeting and states a goal.\n\nFlow: Register -> Onboarding State (greeting) -> Submit Goal -> Submit Assessment -> Roadmap/Daily Plan -> Knowledge Graph -> AI Badge Suggest -> Interview. Retry endpoint handles LM Studio outages.\n\nAI steps require LM Studio on the host (http://localhost:1234/v1).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "accessToken", "value": "" },
+    { "key": "userId", "value": "" },
+    { "key": "interviewId", "value": "" },
+    { "key": "retryId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Register (auto-starts onboarding)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "const r = pm.response.json();",
+        "pm.collectionVariables.set('accessToken', r.accessToken);",
+        "pm.collectionVariables.set('userId', r.userId);"
+      ] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] },
+        "body": { "mode": "raw", "raw": "{\n  \"firstName\": \"Roza\",\n  \"lastName\": \"Hakobyan\",\n  \"username\": \"roza\",\n  \"email\": \"roza@example.com\",\n  \"password\": \"Password123!\"\n}" }
+      }
+    },
+    {
+      "name": "Onboarding State (greeting)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "url": { "raw": "{{baseUrl}}/ai/onboarding/me", "host": ["{{baseUrl}}"], "path": ["ai", "onboarding", "me"] }
+      }
+    },
+    {
+      "name": "Submit Goal",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/ai/onboarding/goal", "host": ["{{baseUrl}}"], "path": ["ai", "onboarding", "goal"] },
+        "body": { "mode": "raw", "raw": "{\n  \"goal\": \"I want to become a Java backend developer\"\n}" }
+      }
+    },
+    {
+      "name": "Submit Assessment",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/ai/onboarding/assessment", "host": ["{{baseUrl}}"], "path": ["ai", "onboarding", "assessment"] },
+        "body": { "mode": "raw", "raw": "{\n  \"answers\": [\n    { \"question\": \"Have you written code before?\", \"answer\": \"A little Python\" },\n    { \"question\": \"What is an API?\", \"answer\": \"A contract between programs\" }\n  ]\n}" }
+      }
+    },
+    {
+      "name": "Roadmap - Mine",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "url": { "raw": "{{baseUrl}}/ai/roadmaps/me", "host": ["{{baseUrl}}"], "path": ["ai", "roadmaps", "me"] }
+      }
+    },
+    {
+      "name": "Daily Plan - Mine",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "url": { "raw": "{{baseUrl}}/ai/daily-plans/me", "host": ["{{baseUrl}}"], "path": ["ai", "daily-plans", "me"] }
+      }
+    },
+    {
+      "name": "Knowledge Graph - Mine",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "url": { "raw": "{{baseUrl}}/ai/knowledge-graph/me", "host": ["{{baseUrl}}"], "path": ["ai", "knowledge-graph", "me"] }
+      }
+    },
+    {
+      "name": "Knowledge Graph - Update",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/ai/knowledge-graph/update", "host": ["{{baseUrl}}"], "path": ["ai", "knowledge-graph", "update"] },
+        "body": { "mode": "raw", "raw": "{\n  \"nodes\": [\n    { \"skillName\": \"OOP\", \"domain\": \"Java\", \"masteryPercentage\": 90, \"confidenceScore\": 0.9 },\n    { \"skillName\": \"Streams\", \"domain\": \"Java\", \"masteryPercentage\": 40, \"confidenceScore\": 0.4 }\n  ]\n}" }
+      }
+    },
+    {
+      "name": "Knowledge Graph - Visualization",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "url": { "raw": "{{baseUrl}}/ai/knowledge-graph/me/visualization", "host": ["{{baseUrl}}"], "path": ["ai", "knowledge-graph", "me", "visualization"] }
+      }
+    },
+    {
+      "name": "Knowledge Graph - History",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "url": { "raw": "{{baseUrl}}/ai/knowledge-graph/me/history", "host": ["{{baseUrl}}"], "path": ["ai", "knowledge-graph", "me", "history"] }
+      }
+    },
+    {
+      "name": "AI Badge Suggestions",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/ai/badges/suggest", "host": ["{{baseUrl}}"], "path": ["ai", "badges", "suggest"] },
+        "body": { "mode": "raw", "raw": "{\n  \"domain\": \"Java Backend Development\"\n}" }
+      }
+    },
+    {
+      "name": "My Badges (after AI suggestions awarded)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "url": { "raw": "{{baseUrl}}/badges/me", "host": ["{{baseUrl}}"], "path": ["badges", "me"] }
+      }
+    },
+    {
+      "name": "Retry deferred AI request (after LM outage)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "url": { "raw": "{{baseUrl}}/ai/retry/{{retryId}}", "host": ["{{baseUrl}}"], "path": ["ai", "retry", "{{retryId}}"] }
+      }
+    },
+    {
+      "name": "Interview - Start",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.collectionVariables.set('interviewId', pm.response.json().id);"
+      ] } }],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/interviews/start", "host": ["{{baseUrl}}"], "path": ["interviews", "start"] },
+        "body": { "mode": "raw", "raw": "{\n  \"domain\": \"Java Backend Development\",\n  \"level\": \"Beginner\"\n}" }
+      }
+    },
+    {
+      "name": "Interview - Submit",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/interviews/{{interviewId}}/submit", "host": ["{{baseUrl}}"], "path": ["interviews", "{{interviewId}}", "submit"] },
+        "body": { "mode": "raw", "raw": "{\n  \"answers\": [\n    { \"questionId\": \"PASTE_A_QUESTION_ID_FROM_START_RESPONSE\", \"answer\": \"My answer...\" }\n  ]\n}" }
+      }
+    }
+  ]
+}

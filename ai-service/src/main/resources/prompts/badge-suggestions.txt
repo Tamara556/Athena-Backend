@@ -1,0 +1,12 @@
+Suggest personalized, motivating achievement badges for a learner in this domain.
+
+Domain: "{{domain}}"
+
+Produce 3 to 5 domain-specific badges. Each badge has:
+- "code": UPPER_SNAKE_CASE, unique, e.g. BUG_SLAYER, KNIFE_APPRENTICE, VOCABULARY_WARRIOR
+- "name": short human-friendly title
+- "description": one motivating sentence
+- "icon": a single emoji
+
+Respond with JSON of this exact shape:
+{"badges":[{"code":"...","name":"...","description":"...","icon":"🏅"}]}

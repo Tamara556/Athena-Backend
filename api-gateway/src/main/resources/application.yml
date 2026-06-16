@@ -45,6 +45,14 @@ spring:
               uri: lb://badge-service
               predicates:
                 - Path=/badges/**
+            - id: ai-service
+              uri: lb://ai-service
+              predicates:
+                - Path=/ai/**
+            - id: interview-service
+              uri: lb://interview-service
+              predicates:
+                - Path=/interviews/**
 
 athena:
   security:

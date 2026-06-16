@@ -10,6 +10,8 @@ import com.athena.badge.repository.BadgeRepository;
 import com.athena.badge.repository.UserBadgeRepository;
 import com.athena.badge.service.AchievementRules;
 import com.athena.badge.service.BadgeService;
+import com.athena.badge.service.BadgeSuggestionValidator;
+import com.athena.common.event.BadgeSuggestion;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -72,5 +74,42 @@ public class BadgeServiceImpl implements BadgeService {
             log.info("Awarded badge {} to userId={}", code, userId);
         });
         return newlyAwarded;
+    }
+
+    @Override
+    @CacheEvict(value = "user-badges", key = "#userId")
+    @Transactional
+    public List<BadgeResponse> awardSuggested(UUID userId, List<BadgeSuggestion> suggestions) {
+        if (suggestions == null || suggestions.isEmpty()) {
+            return List.of();
+        }
+        Set<String> alreadyEarned = userBadgeRepository.findEarnedCodesByUserId(userId);
+        List<BadgeResponse> awarded = new ArrayList<>();
+
+        for (BadgeSuggestion suggestion : suggestions) {
+            if (!BadgeSuggestionValidator.isValid(suggestion)) {
+                log.warn("Rejected invalid AI badge suggestion code={}",
+                        suggestion == null ? null : suggestion.code());
+                continue;
+            }
+            if (alreadyEarned.contains(suggestion.code())) {
+                continue;
+            }
+            Badge badge = badgeRepository.findByCode(suggestion.code())
+                    .orElseGet(() -> badgeRepository.save(fromSuggestion(suggestion)));
+            userBadgeRepository.save(new UserBadge(userId, badge));
+            awarded.add(BadgeMapper.toResponse(badge));
+            log.info("Awarded AI-suggested badge {} to userId={}", suggestion.code(), userId);
+        }
+        return awarded;
+    }
+
+    private Badge fromSuggestion(BadgeSuggestion suggestion) {
+        Badge badge = new Badge();
+        badge.setCode(suggestion.code());
+        badge.setName(suggestion.name());
+        badge.setDescription(suggestion.description());
+        badge.setIcon(suggestion.icon());
+        return badge;
     }
 }

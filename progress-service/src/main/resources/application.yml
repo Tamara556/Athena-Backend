@@ -36,6 +36,8 @@ spring:
     redis:
       host: ${SPRING_DATA_REDIS_HOST:localhost}
       port: ${SPRING_DATA_REDIS_PORT:6379}
+      repositories:
+        enabled: false
   cache:
     type: redis
 
@@ -46,7 +48,6 @@ eureka:
   instance:
     prefer-ip-address: true
 
-# Feign sensible production defaults
 spring.cloud.openfeign.client.config.default:
   connectTimeout: 3000
   readTimeout: 5000

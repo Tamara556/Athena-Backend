@@ -1,0 +1,14 @@
+Create the learner's FIRST daily learning plan.
+
+Goal: "{{goal}}"
+Current level: {{level}}
+Daily available hours: {{dailyHours}}
+Focus on the first roadmap phase: {{phase}}
+
+Produce 3 to 6 plan items appropriate to THIS domain. Each item has a "type"
+(domain-appropriate, e.g. Reading, Coding, Exercise, Quiz, Listening, Speaking,
+Recipe, CaseStudy), a short title, a one-sentence description, and estimatedMinutes.
+The total minutes should roughly match the daily available hours.
+
+Respond with JSON of this exact shape:
+{"items":[{"type":"...","title":"...","description":"...","estimatedMinutes":30}]}
