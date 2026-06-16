@@ -9,6 +9,13 @@ name: athena
 
 x-jwt-secret: &jwt-secret "local-dev-secret-change-me-please-0123456789abcdef"
 
+x-cloudwatch-env: &cloudwatch-env
+  ATHENA_LOGGING_CLOUDWATCH_ENABLED: "${ATHENA_LOGGING_CLOUDWATCH_ENABLED:-true}"
+  ATHENA_LOGGING_CLOUDWATCH_ENDPOINT: "${ATHENA_LOGGING_CLOUDWATCH_ENDPOINT:-http://host.docker.internal:4566}"
+  ATHENA_LOGGING_CLOUDWATCH_REGION: "us-east-1"
+  ATHENA_LOGGING_CLOUDWATCH_ACCESS_KEY: "test"
+  ATHENA_LOGGING_CLOUDWATCH_SECRET_KEY: "test"
+
 services:
 
   # ---------- Infrastructure ----------
@@ -190,6 +197,7 @@ services:
       dockerfile: auth-service/Dockerfile
     container_name: athena-auth-service
     environment:
+      <<: *cloudwatch-env
       SPRING_DATASOURCE_URL: jdbc:postgresql://auth-db:5432/athena_auth
       SPRING_DATASOURCE_USERNAME: athena
       SPRING_DATASOURCE_PASSWORD: athena
@@ -213,6 +221,7 @@ services:
       dockerfile: user-service/Dockerfile
     container_name: athena-user-service
     environment:
+      <<: *cloudwatch-env
       SPRING_DATASOURCE_URL: jdbc:postgresql://user-db:5432/athena_user
       SPRING_DATASOURCE_USERNAME: athena
       SPRING_DATASOURCE_PASSWORD: athena
@@ -232,6 +241,7 @@ services:
       dockerfile: progress-service/Dockerfile
     container_name: athena-progress-service
     environment:
+      <<: *cloudwatch-env
       SPRING_DATASOURCE_URL: jdbc:postgresql://progress-db:5432/athena_progress
       SPRING_DATASOURCE_USERNAME: athena
       SPRING_DATASOURCE_PASSWORD: athena
@@ -257,6 +267,7 @@ services:
       dockerfile: learning-service/Dockerfile
     container_name: athena-learning-service
     environment:
+      <<: *cloudwatch-env
       SPRING_DATASOURCE_URL: jdbc:postgresql://learning-db:5432/athena_learning
       SPRING_DATASOURCE_USERNAME: athena
       SPRING_DATASOURCE_PASSWORD: athena
@@ -279,6 +290,7 @@ services:
       dockerfile: badge-service/Dockerfile
     container_name: athena-badge-service
     environment:
+      <<: *cloudwatch-env
       SPRING_DATASOURCE_URL: jdbc:postgresql://badge-db:5432/athena_badge
       SPRING_DATASOURCE_USERNAME: athena
       SPRING_DATASOURCE_PASSWORD: athena
@@ -304,6 +316,7 @@ services:
       dockerfile: ai-service/Dockerfile
     container_name: athena-ai-service
     environment:
+      <<: *cloudwatch-env
       SPRING_DATASOURCE_URL: jdbc:postgresql://ai-db:5432/athena_ai
       SPRING_DATASOURCE_USERNAME: athena
       SPRING_DATASOURCE_PASSWORD: athena
@@ -335,6 +348,7 @@ services:
       dockerfile: interview-service/Dockerfile
     container_name: athena-interview-service
     environment:
+      <<: *cloudwatch-env
       SPRING_DATASOURCE_URL: jdbc:postgresql://interview-db:5432/athena_interview
       SPRING_DATASOURCE_USERNAME: athena
       SPRING_DATASOURCE_PASSWORD: athena
@@ -357,6 +371,7 @@ services:
       dockerfile: api-gateway/Dockerfile
     container_name: athena-api-gateway
     environment:
+      <<: *cloudwatch-env
       EUREKA_URI: http://discovery-server:8761/eureka/
       ATHENA_JWT_SECRET: *jwt-secret
       ATHENA_FRONTEND_ORIGIN: ${ATHENA_FRONTEND_ORIGIN:-http://localhost:4200}
