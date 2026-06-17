@@ -55,6 +55,9 @@ public class UserAccount {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
+    @Column(name = "image_name")
+    private String imageName;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             name = "user_account_roles",

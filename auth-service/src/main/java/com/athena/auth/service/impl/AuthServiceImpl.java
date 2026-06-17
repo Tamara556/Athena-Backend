@@ -10,6 +10,7 @@ import com.athena.auth.entity.UserAccount;
 import com.athena.auth.messaging.AuthEventPublisher;
 import com.athena.auth.repository.UserAccountRepository;
 import com.athena.auth.service.AuthService;
+import com.athena.auth.service.UserImageService;
 import com.athena.common.event.UserRegisteredEvent;
 import com.athena.common.exception.DuplicateResourceException;
 import com.athena.common.exception.InvalidCredentialsException;
@@ -22,8 +23,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.athena.common.storage.ImageStorage.StoredImage;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -37,10 +42,11 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthEventPublisher eventPublisher;
+    private final UserImageService userImageService;
 
     @Override
     @Transactional
-    public AuthResponse register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request, MultipartFile image) {
         String email = normalizeEmail(request.email());
         String username = normalizeUsername(request.username());
 
@@ -60,6 +66,11 @@ public class AuthServiceImpl implements AuthService {
         account.addRole(Role.USER);
 
         UserAccount saved = userAccountRepository.save(account);
+        String imageName = userImageService.store(saved.getId(), image);
+        if (imageName != null) {
+            saved.setImageName(imageName);
+            saved = userAccountRepository.save(saved);
+        }
         log.info("Registered new account userId={} username={}", saved.getId(), username);
 
         eventPublisher.publishUserRegistered(new UserRegisteredEvent(
@@ -102,6 +113,14 @@ public class AuthServiceImpl implements AuthService {
         return buildAuthResponse(account);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<StoredImage> loadAvatar(UUID userId) {
+        return userAccountRepository.findById(userId)
+                .map(UserAccount::getImageName)
+                .flatMap(userImageService::load);
+    }
+
     private AuthResponse buildAuthResponse(UserAccount account) {
         String subject = account.getId().toString();
         List<String> roleNames = account.getRoles().stream().map(Enum::name).toList();
@@ -120,7 +139,8 @@ public class AuthServiceImpl implements AuthService {
                 "Bearer",
                 accessToken,
                 refreshToken,
-                jwtService.getAccessTokenTtlSeconds());
+                jwtService.getAccessTokenTtlSeconds(),
+                account.getImageName());
     }
 
     private String normalizeEmail(String email) {

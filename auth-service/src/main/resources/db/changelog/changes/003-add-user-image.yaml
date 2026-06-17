@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-add-user-image
+      author: athena
+      comment: >-
+        Add nullable image_name to user_account. Holds the S3 object key of the
+        user's profile picture; NULL means no picture was uploaded and the
+        frontend renders its default (initials) avatar.
+      changes:
+        - addColumn:
+            tableName: user_account
+            columns:
+              - column:
+                  name: image_name
+                  type: varchar(255)

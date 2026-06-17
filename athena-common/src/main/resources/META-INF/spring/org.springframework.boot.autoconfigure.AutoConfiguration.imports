@@ -1,1 +1,2 @@
 com.athena.common.logging.CloudWatchLoggingAutoConfiguration
+com.athena.common.storage.ImageStorageAutoConfiguration
