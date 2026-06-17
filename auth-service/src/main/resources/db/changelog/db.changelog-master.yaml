@@ -3,3 +3,5 @@ databaseChangeLog:
       file: db/changelog/changes/001-create-user-account.yaml
   - include:
       file: db/changelog/changes/002-add-user-identity-fields.yaml
+  - include:
+      file: db/changelog/changes/003-add-user-image.yaml

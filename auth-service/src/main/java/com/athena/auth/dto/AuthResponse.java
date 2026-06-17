@@ -13,6 +13,7 @@ public record AuthResponse(
         String tokenType,
         String accessToken,
         String refreshToken,
-        long expiresIn
+        long expiresIn,
+        String imageName
 ) {
 }

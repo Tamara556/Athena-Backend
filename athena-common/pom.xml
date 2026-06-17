@@ -62,6 +62,13 @@
             <artifactId>cloudwatchlogs</artifactId>
             <version>${aws.sdk.version}</version>
         </dependency>
+
+        <!-- S3 image storage (opt-in via athena.storage.s3.enabled; works against LocalStack) -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>${aws.sdk.version}</version>
+        </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>

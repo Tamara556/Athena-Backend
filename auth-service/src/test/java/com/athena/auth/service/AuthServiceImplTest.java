@@ -20,6 +20,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -30,7 +31,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -45,6 +48,8 @@ class AuthServiceImplTest {
     private JwtService jwtService;
     @Mock
     private com.athena.auth.messaging.AuthEventPublisher eventPublisher;
+    @Mock
+    private UserImageService userImageService;
 
     @InjectMocks
     private AuthServiceImpl authService;
@@ -81,7 +86,8 @@ class AuthServiceImplTest {
         });
         stubTokenIssuing();
 
-        AuthResponse response = authService.register(request);
+        // No picture: image storage returns null and no image is persisted.
+        AuthResponse response = authService.register(request, null);
 
         ArgumentCaptor<UserAccount> captor = ArgumentCaptor.forClass(UserAccount.class);
         verify(userAccountRepository).save(captor.capture());
@@ -91,6 +97,7 @@ class AuthServiceImplTest {
         assertThat(saved.getFirstName()).isEqualTo("Ada");
         assertThat(saved.getLastName()).isEqualTo("Lovelace");
         assertThat(saved.getPasswordHash()).isEqualTo("hashed");
+        assertThat(saved.getImageName()).isNull();
         assertThat(saved.getRoles()).containsExactly(Role.USER);
 
         assertThat(response.userId()).isEqualTo(id);
@@ -99,6 +106,37 @@ class AuthServiceImplTest {
         assertThat(response.roles()).containsExactly("USER");
         assertThat(response.accessToken()).isEqualTo("access-token");
         assertThat(response.tokenType()).isEqualTo("Bearer");
+        assertThat(response.imageName()).isNull();
+    }
+
+    @Test
+    void register_storesPictureUnderUserIdFolder() {
+        RegisterRequest request = new RegisterRequest("Ada", "Lovelace", "ada", "New.User@Example.com", "Password123!");
+        MultipartFile image = mock(MultipartFile.class);
+        when(userAccountRepository.existsByEmailIgnoreCase("new.user@example.com")).thenReturn(false);
+        when(userAccountRepository.existsByUsernameIgnoreCase("ada")).thenReturn(false);
+        when(passwordEncoder.encode("Password123!")).thenReturn("hashed");
+        UUID id = UUID.randomUUID();
+        when(userAccountRepository.save(any(UserAccount.class))).thenAnswer(invocation -> {
+            UserAccount toSave = invocation.getArgument(0);
+            toSave.setId(id);
+            return toSave;
+        });
+        when(userImageService.store(any(UUID.class), any())).thenReturn(id + "/pic.png");
+        stubTokenIssuing();
+
+        AuthResponse response = authService.register(request, image);
+
+        // The picture is stored under the freshly generated user id (its own folder).
+        ArgumentCaptor<UUID> userIdCaptor = ArgumentCaptor.forClass(UUID.class);
+        verify(userImageService).store(userIdCaptor.capture(), eq(image));
+        assertThat(userIdCaptor.getValue()).isEqualTo(id);
+
+        // Saved twice: once to mint the id, once to persist the image key.
+        ArgumentCaptor<UserAccount> captor = ArgumentCaptor.forClass(UserAccount.class);
+        verify(userAccountRepository, times(2)).save(captor.capture());
+        assertThat(captor.getValue().getImageName()).isEqualTo(id + "/pic.png");
+        assertThat(response.imageName()).isEqualTo(id + "/pic.png");
     }
 
     @Test
@@ -106,7 +144,7 @@ class AuthServiceImplTest {
         when(userAccountRepository.existsByEmailIgnoreCase("taken@example.com")).thenReturn(true);
 
         assertThatThrownBy(() -> authService.register(
-                new RegisterRequest("A", "B", "auser", "taken@example.com", "Password123!")))
+                new RegisterRequest("A", "B", "auser", "taken@example.com", "Password123!"), null))
                 .isInstanceOf(DuplicateResourceException.class);
 
         verify(userAccountRepository, never()).save(any());
@@ -118,10 +156,11 @@ class AuthServiceImplTest {
         when(userAccountRepository.existsByUsernameIgnoreCase("taken")).thenReturn(true);
 
         assertThatThrownBy(() -> authService.register(
-                new RegisterRequest("A", "B", "Taken", "free@example.com", "Password123!")))
+                new RegisterRequest("A", "B", "Taken", "free@example.com", "Password123!"), null))
                 .isInstanceOf(DuplicateResourceException.class);
 
         verify(userAccountRepository, never()).save(any());
+        verify(userImageService, never()).store(any(), any());
     }
 
     @Test
