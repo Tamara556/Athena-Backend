@@ -49,6 +49,10 @@ spring:
               uri: lb://ai-service
               predicates:
                 - Path=/ai/**
+            - id: learning-sessions
+              uri: lb://ai-service
+              predicates:
+                - Path=/learning-sessions/**
             - id: interview-service
               uri: lb://interview-service
               predicates:

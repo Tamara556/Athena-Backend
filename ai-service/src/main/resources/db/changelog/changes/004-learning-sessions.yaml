@@ -1,0 +1,140 @@
+databaseChangeLog:
+  - changeSet:
+      id: 010-create-learning-sessions
+      author: athena
+      changes:
+        - createTable:
+            tableName: learning_sessions
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_learning_sessions, nullable: false } }
+              - column: { name: user_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: roadmap_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: roadmap_node_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: node_index, type: int, constraints: { nullable: false } }
+              - column: { name: title, type: varchar(300), constraints: { nullable: false } }
+              - column: { name: status, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: estimated_minutes, type: int, constraints: { nullable: false } }
+              - column: { name: generated_at, type: timestamp with time zone, constraints: { nullable: false } }
+              - column: { name: updated_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - addUniqueConstraint:
+            tableName: learning_sessions
+            columnNames: user_id, roadmap_node_id
+            constraintName: uk_learning_session_node
+        - createIndex:
+            tableName: learning_sessions
+            indexName: idx_learning_session_user_node
+            columns:
+              - column: { name: user_id }
+              - column: { name: node_index }
+        - createIndex:
+            tableName: learning_sessions
+            indexName: idx_learning_session_roadmap
+            columns:
+              - column: { name: user_id }
+              - column: { name: roadmap_id }
+  - changeSet:
+      id: 011-create-reading-materials
+      author: athena
+      changes:
+        - createTable:
+            tableName: reading_materials
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_reading_materials, nullable: false } }
+              - column:
+                  name: session_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_reading_material_session
+                    references: learning_sessions(id)
+                    deleteCascade: true
+              - column: { name: title, type: varchar(300), constraints: { nullable: false } }
+              - column: { name: content, type: text, constraints: { nullable: false } }
+              - column: { name: estimated_minutes, type: int, constraints: { nullable: false } }
+              - column: { name: order_index, type: int, constraints: { nullable: false } }
+        - createIndex:
+            tableName: reading_materials
+            indexName: idx_reading_material_session
+            columns:
+              - column: { name: session_id }
+  - changeSet:
+      id: 012-create-watching-materials
+      author: athena
+      changes:
+        - createTable:
+            tableName: watching_materials
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_watching_materials, nullable: false } }
+              - column:
+                  name: session_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_watching_material_session
+                    references: learning_sessions(id)
+                    deleteCascade: true
+              - column: { name: title, type: varchar(300), constraints: { nullable: false } }
+              - column: { name: description, type: text, constraints: { nullable: false } }
+              - column: { name: video_query, type: varchar(500), constraints: { nullable: false } }
+              - column: { name: estimated_minutes, type: int, constraints: { nullable: false } }
+              - column: { name: order_index, type: int, constraints: { nullable: false } }
+        - createIndex:
+            tableName: watching_materials
+            indexName: idx_watching_material_session
+            columns:
+              - column: { name: session_id }
+  - changeSet:
+      id: 013-create-practice-activities
+      author: athena
+      changes:
+        - createTable:
+            tableName: practice_activities
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_practice_activities, nullable: false } }
+              - column:
+                  name: session_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_practice_activity_session
+                    references: learning_sessions(id)
+                    deleteCascade: true
+              - column: { name: title, type: varchar(300), constraints: { nullable: false } }
+              - column: { name: description, type: text, constraints: { nullable: false } }
+              - column: { name: practice_type, type: varchar(30), constraints: { nullable: false } }
+              - column: { name: instructions, type: text, constraints: { nullable: false } }
+              - column: { name: starter_content, type: text }
+              - column: { name: estimated_minutes, type: int, constraints: { nullable: false } }
+              - column: { name: order_index, type: int, constraints: { nullable: false } }
+        - createIndex:
+            tableName: practice_activities
+            indexName: idx_practice_activity_session
+            columns:
+              - column: { name: session_id }
+  - changeSet:
+      id: 014-create-quiz-questions
+      author: athena
+      changes:
+        - createTable:
+            tableName: quiz_questions
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_quiz_questions, nullable: false } }
+              - column:
+                  name: session_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_quiz_question_session
+                    references: learning_sessions(id)
+                    deleteCascade: true
+              - column: { name: question, type: text, constraints: { nullable: false } }
+              - column: { name: type, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: options_json, type: text, constraints: { nullable: false } }
+              - column: { name: correct_answer, type: varchar(1000), constraints: { nullable: false } }
+              - column: { name: explanation, type: text }
+              - column: { name: order_index, type: int, constraints: { nullable: false } }
+        - createIndex:
+            tableName: quiz_questions
+            indexName: idx_quiz_question_session
+            columns:
+              - column: { name: session_id }

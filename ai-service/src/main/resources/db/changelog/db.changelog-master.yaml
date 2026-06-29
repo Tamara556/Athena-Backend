@@ -5,3 +5,5 @@ databaseChangeLog:
       file: db/changelog/changes/002-v3-refinements.yaml
   - include:
       file: db/changelog/changes/003-knowledge-graph-visualization.yaml
+  - include:
+      file: db/changelog/changes/004-learning-sessions.yaml

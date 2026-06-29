@@ -10,6 +10,7 @@ import com.athena.ai.model.DailyPlanContent;
 import com.athena.ai.model.GoalAnalysis;
 import com.athena.ai.model.InterviewEvaluation;
 import com.athena.ai.model.InterviewQuestions;
+import com.athena.ai.model.LearningSessionContent;
 import com.athena.ai.model.RoadmapContent;
 import com.athena.ai.service.AiGenerationService;
 import com.athena.common.event.BadgeSuggestion;
@@ -72,6 +73,20 @@ public class AiGenerationServiceImpl implements AiGenerationService {
                 ResponseFormat.ofSchema("daily_plan", DAILY_PLAN_SCHEMA));
     }
 
+    @Override
+    public LearningSessionContent generateLearningSession(UUID userId, String goal, String domain, String level,
+                                                          String nodeTitle, String objectivesText) {
+        Map<String, String> vars = Map.of(
+                "goal", goal,
+                "domain", domain,
+                "level", level,
+                "node", nodeTitle,
+                "objectives", objectivesText);
+        return llm.generateJson(userId, AiConstants.PROMPT_LEARNING_SESSION, system(),
+                prompts.render(AiConstants.TPL_LEARNING_SESSION, vars), LearningSessionContent.class,
+                ResponseFormat.ofSchema("learning_session", LEARNING_SESSION_SCHEMA));
+    }
+
     private RoadmapContent withStatuses(RoadmapContent content) {
         if (content == null || content.phases() == null) {
             return content;
@@ -124,6 +139,10 @@ public class AiGenerationServiceImpl implements AiGenerationService {
         return Map.of("type", "object", "properties", properties, "required", required);
     }
 
+    private static Map<String, Object> enumOf(List<String> values) {
+        return Map.of("type", "string", "enum", values);
+    }
+
     private static final Map<String, Object> ASSESSMENT_SCHEMA =
             object(Map.of("questions", arrayOf(STR)), List.of("questions"));
 
@@ -143,4 +162,32 @@ public class AiGenerationServiceImpl implements AiGenerationService {
                     Map.of("type", STR, "title", STR, "description", STR, "estimatedMinutes", INT),
                     List.of("type", "title", "description", "estimatedMinutes")))),
             List.of("items"));
+
+    private static final Map<String, Object> READING_SCHEMA = object(
+            Map.of("title", STR, "content", STR, "estimatedMinutes", INT),
+            List.of("title", "content", "estimatedMinutes"));
+
+    private static final Map<String, Object> WATCHING_SCHEMA = object(
+            Map.of("title", STR, "description", STR, "videoQuery", STR, "estimatedMinutes", INT),
+            List.of("title", "description", "videoQuery", "estimatedMinutes"));
+
+    private static final Map<String, Object> PRACTICE_SCHEMA = object(
+            Map.of("title", STR, "description", STR,
+                    "practiceType", enumOf(List.of(
+                            "CODE_EDITOR", "LANGUAGE_EXERCISE", "SCENARIO", "CREATIVE_PROMPT", "REFLECTION")),
+                    "instructions", STR, "starterContent", STR, "estimatedMinutes", INT),
+            List.of("title", "description", "practiceType", "instructions", "starterContent", "estimatedMinutes"));
+
+    private static final Map<String, Object> QUIZ_SCHEMA = object(
+            Map.of("question", STR,
+                    "type", enumOf(List.of("SINGLE_CHOICE", "MULTIPLE_CHOICE", "TRUE_FALSE")),
+                    "options", arrayOf(STR), "correctAnswer", STR, "explanation", STR),
+            List.of("question", "type", "options", "correctAnswer", "explanation"));
+
+    private static final Map<String, Object> LEARNING_SESSION_SCHEMA = object(
+            Map.of("readings", arrayOf(READING_SCHEMA),
+                    "watchings", arrayOf(WATCHING_SCHEMA),
+                    "practices", arrayOf(PRACTICE_SCHEMA),
+                    "quizzes", arrayOf(QUIZ_SCHEMA)),
+            List.of("readings", "watchings", "practices", "quizzes"));
 }

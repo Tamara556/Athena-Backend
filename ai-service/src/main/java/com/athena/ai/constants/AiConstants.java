@@ -13,6 +13,7 @@ public final class AiConstants {
     public static final String PROMPT_INTERVIEW_QUESTIONS = "INTERVIEW_QUESTIONS";
     public static final String PROMPT_INTERVIEW_EVALUATION = "INTERVIEW_EVALUATION";
     public static final String PROMPT_BADGE_SUGGESTIONS = "BADGE_SUGGESTIONS";
+    public static final String PROMPT_LEARNING_SESSION = "LEARNING_SESSION";
 
     public static final String TPL_SYSTEM = "system";
     public static final String TPL_ASSESSMENT = "assessment";
@@ -22,11 +23,16 @@ public final class AiConstants {
     public static final String TPL_INTERVIEW_QUESTIONS = "interview-questions";
     public static final String TPL_INTERVIEW_EVALUATION = "interview-evaluation";
     public static final String TPL_BADGE_SUGGESTIONS = "badge-suggestions";
+    public static final String TPL_LEARNING_SESSION = "learning-session";
 
     public static final String RESOURCE_ONBOARDING = "Onboarding session";
     public static final String RESOURCE_ROADMAP = "Roadmap";
     public static final String RESOURCE_DAILY_PLAN = "Daily plan";
     public static final String RESOURCE_RETRY = "AI retry request";
+    public static final String RESOURCE_LEARNING_SESSION = "Learning session";
+
+    public static final String CACHE_LEARNING_SESSION = "learning-session";
+    public static final int LEARNING_SESSION_BUFFER = 5;
 
     public static final String RETRY_ASSESSMENT = "ONBOARDING_ASSESSMENT";
     public static final String RETRY_COMPLETE = "ONBOARDING_COMPLETE";
