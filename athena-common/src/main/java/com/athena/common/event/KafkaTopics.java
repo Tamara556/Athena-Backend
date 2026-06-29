@@ -27,6 +27,11 @@ public final class KafkaTopics {
     public static final String KNOWLEDGE_GRAPH_VISUALIZATION_GENERATED = "athena.knowledge.visualization.generated";
     public static final String KNOWLEDGE_GRAPH_SNAPSHOT_CREATED = "athena.knowledge.snapshot.created";
 
+    public static final String LEARNING_SESSION_GENERATED = "athena.learning.session.generated";
+    public static final String LEARNING_SESSION_STARTED = "athena.learning.session.started";
+    public static final String LEARNING_SESSION_COMPLETED = "athena.learning.session.completed";
+    public static final String NODE_BUFFER_REFILLED = "athena.learning.node.buffer.refilled";
+
     private KafkaTopics() {
     }
 }

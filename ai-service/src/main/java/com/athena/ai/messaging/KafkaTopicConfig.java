@@ -62,4 +62,24 @@ public class KafkaTopicConfig {
     NewTopic knowledgeSnapshotCreatedTopic() {
         return topic(KafkaTopics.KNOWLEDGE_GRAPH_SNAPSHOT_CREATED);
     }
+
+    @Bean
+    NewTopic learningSessionGeneratedTopic() {
+        return topic(KafkaTopics.LEARNING_SESSION_GENERATED);
+    }
+
+    @Bean
+    NewTopic learningSessionStartedTopic() {
+        return topic(KafkaTopics.LEARNING_SESSION_STARTED);
+    }
+
+    @Bean
+    NewTopic learningSessionCompletedTopic() {
+        return topic(KafkaTopics.LEARNING_SESSION_COMPLETED);
+    }
+
+    @Bean
+    NewTopic nodeBufferRefilledTopic() {
+        return topic(KafkaTopics.NODE_BUFFER_REFILLED);
+    }
 }

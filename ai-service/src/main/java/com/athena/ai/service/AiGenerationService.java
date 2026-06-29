@@ -5,6 +5,7 @@ import com.athena.ai.model.GoalAnalysis;
 import com.athena.ai.model.InterviewEvaluation;
 import com.athena.ai.model.InterviewQuestions;
 import com.athena.ai.model.DailyPlanContent;
+import com.athena.ai.model.LearningSessionContent;
 import com.athena.ai.model.RoadmapContent;
 import com.athena.common.event.BadgeSuggestion;
 
@@ -21,6 +22,9 @@ public interface AiGenerationService {
 
     DailyPlanContent generateDailyPlan(UUID userId, String goal, String level,
                                        String firstPhase, double dailyHours);
+
+    LearningSessionContent generateLearningSession(UUID userId, String goal, String domain, String level,
+                                                   String nodeTitle, String objectivesText);
 
     InterviewQuestions generateInterviewQuestions(UUID userId, String domain, String level);
 

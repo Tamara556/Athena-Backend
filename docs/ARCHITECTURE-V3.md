@@ -292,3 +292,62 @@ GET /ai/knowledge-graph/me/visualization
 ## New events
 `KnowledgeGraphVisualizationGeneratedEvent`, `KnowledgeGraphSnapshotCreatedEvent`
 (topics `athena.knowledge.visualization.generated`, `athena.knowledge.snapshot.created`).
+
+---
+
+# Learning Sessions — AI-generated lessons with rolling lookahead
+
+Roadmap phases ("nodes") are generated during onboarding, but the actual study
+material is generated on demand by **ai-service**, one `LearningSession` per node.
+
+## Node identity
+Roadmap nodes are the phases stored in `generated_roadmaps.content_json` (no node
+table). A node's stable id is derived deterministically:
+`roadmapNodeId = UUID.nameUUIDFromBytes(roadmapId + ":" + nodeIndex)`. A session is
+unique per `(user_id, roadmap_node_id)`, which makes generation idempotent.
+
+## Rolling lookahead (constant 5-node buffer)
+- On `RoadmapGeneratedEvent` (onboarding complete), ai-service consumes the event and
+  generates lessons for the **first 5 nodes only** (`LEARNING_SESSION_BUFFER = 5`).
+- On `LearningSessionCompletedEvent`, ai-service generates the **next node that has no
+  session yet**, keeping ~5 nodes ahead. Both triggers run in Kafka consumers — no
+  synchronous blocking of the request thread.
+
+## Aggregate & stages
+`LearningSession` (id, userId, roadmapId, roadmapNodeId, nodeIndex, title, status,
+estimatedMinutes, generatedAt, updatedAt; status `NOT_STARTED | IN_PROGRESS | COMPLETED`)
+owns four persisted stages, each in its own table with a FK + cascade delete and a
+`session_id` index:
+- `reading_materials` (title, content, estimatedMinutes, orderIndex)
+- `watching_materials` (title, description, **videoQuery** — search queries, never URLs)
+- `practice_activities` (title, description, **practiceType**, instructions, starterContent)
+- `quiz_questions` (question, type, options, correctAnswer, explanation)
+
+## Domain-aware practice
+LM Studio picks the `practiceType` from the domain: `CODE_EDITOR` (programming, with
+starter code), `LANGUAGE_EXERCISE` (languages), `SCENARIO` (business),
+`CREATIVE_PROMPT` (creative), `REFLECTION` (theory-heavy).
+
+## AI generation
+All four stages are produced in **one** structured LM Studio response, enforced with a
+JSON schema (`ResponseFormat.ofSchema`). Only structured outputs are persisted — prompts
+and raw LM responses are never stored (the AiRequest/AiResponse audit keeps metadata only).
+
+## Redis
+The assembled session detail is cached as `learning-session::{sessionId}` (30-min TTL)
+and evicted whenever the session changes (start/complete).
+
+## Kafka events
+`LearningSessionGeneratedEvent`, `LearningSessionStartedEvent`,
+`LearningSessionCompletedEvent`, `NodeBufferRefilledEvent`
+(topics `athena.learning.session.generated|started|completed`,
+`athena.learning.node.buffer.refilled`).
+
+## Endpoints (gateway-routed `/learning-sessions/**` → ai-service)
+| Method | Path | Notes |
+|--------|------|-------|
+| GET | `/learning-sessions/current` | first non-completed session (full detail) |
+| GET | `/learning-sessions/upcoming` | not-completed sessions (summaries) |
+| GET | `/learning-sessions/{sessionId}` | full detail, owner only |
+| POST | `/learning-sessions/{sessionId}/start` | → IN_PROGRESS |
+| POST | `/learning-sessions/{sessionId}/complete` | → COMPLETED (triggers buffer refill) |
