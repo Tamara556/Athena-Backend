@@ -11,9 +11,12 @@ Produce four stages, all specific to THIS node and domain:
 
 1. readings: 1-3 self-contained explanations. Each has a title, teaching "content"
    (a few rich paragraphs of actual material, not a description), and estimatedMinutes.
-2. watchings: 1-3 videos to watch. Each has a title, a short description, and a
-   "videoQuery" which is a search query a learner could paste into a video platform.
-   Provide search queries ONLY, never URLs. Include estimatedMinutes.
+2. watchings: 1-3 videos to watch. Each has a title, a short description, a
+   "videoQuery" (a search query a learner could paste into a video platform), and a
+   "videoId" — the 11-character YouTube video id (the part after "v=") of a REAL,
+   well-known, currently-available video that teaches this exact topic. Only give a
+   videoId you are confident actually exists; if unsure, use an empty string "" and the
+   videoQuery will be used to find one instead. Include estimatedMinutes.
 3. practices: 1-3 hands-on activities. Choose practiceType based on the domain:
    - Programming/software -> CODE_EDITOR, and put runnable starter code in starterContent.
    - Languages -> LANGUAGE_EXERCISE (fill-in-the-blanks, writing prompts, vocabulary).
@@ -29,6 +32,6 @@ Produce four stages, all specific to THIS node and domain:
 
 Respond with JSON of this exact shape:
 {"readings":[{"title":"...","content":"...","estimatedMinutes":15}],
-"watchings":[{"title":"...","description":"...","videoQuery":"...","estimatedMinutes":10}],
+"watchings":[{"title":"...","description":"...","videoQuery":"...","videoId":"dQw4w9WgXcQ","estimatedMinutes":10}],
 "practices":[{"title":"...","description":"...","practiceType":"CODE_EDITOR","instructions":"...","starterContent":"...","estimatedMinutes":20}],
 "quizzes":[{"question":"...","type":"SINGLE_CHOICE","options":["..."],"correctAnswer":"...","explanation":"..."}]}

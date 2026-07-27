@@ -50,12 +50,15 @@ class AuthControllerTest {
                 "access-token",
                 "refresh-token",
                 900L,
-                "avatars/ada.png");
+                "avatars/ada.png",
+                false,
+                null,
+                "22222222-2222-2222-2222-222222222222");
     }
 
     @Test
     void register_returns201WithTokens() throws Exception {
-        when(authService.register(any(), any())).thenReturn(sampleResponse());
+        when(authService.register(any(), any(), any(), any())).thenReturn(sampleResponse());
 
         mockMvc.perform(multipart("/auth/register")
                         .param("firstName", "Ada")
@@ -72,7 +75,7 @@ class AuthControllerTest {
 
     @Test
     void register_returns201WithUploadedImage() throws Exception {
-        when(authService.register(any(), any())).thenReturn(sampleResponse());
+        when(authService.register(any(), any(), any(), any())).thenReturn(sampleResponse());
 
         MockMultipartFile image = new MockMultipartFile(
                 "image", "me.png", MediaType.IMAGE_PNG_VALUE, new byte[]{1, 2, 3});
@@ -149,7 +152,7 @@ class AuthControllerTest {
 
     @Test
     void login_returns200() throws Exception {
-        when(authService.login(any())).thenReturn(sampleResponse());
+        when(authService.login(any(), any(), any())).thenReturn(sampleResponse());
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -161,7 +164,7 @@ class AuthControllerTest {
 
     @Test
     void login_returns401OnInvalidCredentials() throws Exception {
-        when(authService.login(any())).thenThrow(new InvalidCredentialsException(AuthConstants.INVALID_CREDENTIALS));
+        when(authService.login(any(), any(), any())).thenThrow(new InvalidCredentialsException(AuthConstants.INVALID_CREDENTIALS));
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

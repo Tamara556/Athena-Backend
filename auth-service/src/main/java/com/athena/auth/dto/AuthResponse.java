@@ -14,6 +14,13 @@ public record AuthResponse(
         String accessToken,
         String refreshToken,
         long expiresIn,
-        String imageName
+        String imageName,
+        boolean twoFactorRequired,
+        String challengeToken,
+        String sessionId
 ) {
+
+    public static AuthResponse twoFactorChallenge(String challengeToken) {
+        return new AuthResponse(null, null, null, null, null, Set.of(), null, null, null, 0, null, true, challengeToken, null);
+    }
 }

@@ -58,6 +58,21 @@ public class UserAccount {
     @Column(name = "image_name")
     private String imageName;
 
+    @Column(name = "two_factor_enabled", nullable = false)
+    private boolean twoFactorEnabled = false;
+
+    @Column(name = "phone_number", length = 20)
+    private String phoneNumber;
+
+    @Column(name = "two_factor_pending_phone", length = 20)
+    private String twoFactorPendingPhone;
+
+    @Column(name = "two_factor_code_hash", length = 64)
+    private String twoFactorCodeHash;
+
+    @Column(name = "two_factor_code_expires_at")
+    private Instant twoFactorCodeExpiresAt;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             name = "user_account_roles",

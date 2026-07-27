@@ -1,0 +1,16 @@
+Design ONE short, focused drill to strengthen a single weak skill.
+
+Skill: "{{skill}}"
+Domain: {{domain}}
+Current mastery: {{mastery}} percent
+
+The drill must be completable in a single short sitting and target exactly this skill.
+
+- title: short, specific to the skill.
+- description: one sentence on what the learner practices and why it helps.
+- type: one of PRACTICE, REVIEW, DRILL, QUIZ depending on what best strengthens the skill.
+- durationMinutes: a realistic short duration (8-15).
+- instructions: clear step-by-step instructions the learner follows.
+
+Respond with JSON of this exact shape:
+{"title":"...","description":"...","type":"REVIEW","durationMinutes":12,"instructions":"..."}

@@ -82,4 +82,34 @@ public class KafkaTopicConfig {
     NewTopic nodeBufferRefilledTopic() {
         return topic(KafkaTopics.NODE_BUFFER_REFILLED);
     }
+
+    @Bean
+    NewTopic dailyMissionGeneratedTopic() {
+        return topic(KafkaTopics.DAILY_MISSION_GENERATED);
+    }
+
+    @Bean
+    NewTopic dailyBlockCompletedTopic() {
+        return topic(KafkaTopics.DAILY_BLOCK_COMPLETED);
+    }
+
+    @Bean
+    NewTopic dailyBlockSkippedTopic() {
+        return topic(KafkaTopics.DAILY_BLOCK_SKIPPED);
+    }
+
+    @Bean
+    NewTopic dailyMissionAdjustedTopic() {
+        return topic(KafkaTopics.DAILY_MISSION_ADJUSTED);
+    }
+
+    @Bean
+    NewTopic dailyCheckinRecordedTopic() {
+        return topic(KafkaTopics.DAILY_CHECKIN_RECORDED);
+    }
+
+    @Bean
+    NewTopic dailyReflectionSavedTopic() {
+        return topic(KafkaTopics.DAILY_REFLECTION_SAVED);
+    }
 }

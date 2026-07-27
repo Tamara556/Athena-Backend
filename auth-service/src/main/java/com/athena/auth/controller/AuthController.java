@@ -4,8 +4,10 @@ import com.athena.auth.dto.AuthResponse;
 import com.athena.auth.dto.LoginRequest;
 import com.athena.auth.dto.RefreshRequest;
 import com.athena.auth.dto.RegisterRequest;
+import com.athena.auth.dto.TwoFactorVerifyRequest;
 import com.athena.auth.service.AuthService;
 import com.athena.common.storage.ImageStorage.StoredImage;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.CacheControl;
@@ -35,13 +37,20 @@ public class AuthController {
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AuthResponse> register(
             @Valid @ModelAttribute RegisterRequest request,
-            @RequestPart(value = "image", required = false) MultipartFile image) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request, image));
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            HttpServletRequest http) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(authService.register(request, image, clientIp(http), http.getHeader("User-Agent")));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest http) {
+        return ResponseEntity.ok(authService.login(request, clientIp(http), http.getHeader("User-Agent")));
+    }
+
+    @PostMapping("/2fa/verify")
+    public ResponseEntity<AuthResponse> verifyTwoFactor(@Valid @RequestBody TwoFactorVerifyRequest request, HttpServletRequest http) {
+        return ResponseEntity.ok(authService.verifyTwoFactor(request, clientIp(http), http.getHeader("User-Agent")));
     }
 
     @PostMapping("/refresh")
@@ -54,6 +63,14 @@ public class AuthController {
         return authService.loadAvatar(userId)
                 .map(this::toImageResponse)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    private static String clientIp(HttpServletRequest http) {
+        String forwarded = http.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            return forwarded.split(",")[0].trim();
+        }
+        return http.getRemoteAddr();
     }
 
     private ResponseEntity<byte[]> toImageResponse(StoredImage image) {

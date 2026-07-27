@@ -1,0 +1,83 @@
+server:
+  port: 8088
+
+spring:
+  application:
+    name: rag-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5440/athena_rag}
+    username: ${SPRING_DATASOURCE_USERNAME:athena}
+    password: ${SPRING_DATASOURCE_PASSWORD:athena}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:29092}
+    consumer:
+      group-id: rag-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      repositories:
+        enabled: false
+
+athena:
+  rag:
+    embedding-dimension: ${ATHENA_RAG_EMBEDDING_DIMENSION:1024}
+    chunk-max-tokens: 900
+    chunk-overlap-tokens: 150
+    retrieval-top-k: 6
+    min-similarity: 0.35
+    max-context-tokens: 6000
+    max-search-results: 20
+  llm:
+    chat:
+      base-url: ${ATHENA_AI_BASE_URL:http://localhost:1234/v1}
+      model: ${ATHENA_AI_MODEL:qwen3-14b}
+      read-timeout: ${ATHENA_AI_READ_TIMEOUT:1200s}
+      temperature: 0.3
+      max-tokens: ${ATHENA_AI_MAX_TOKENS:4096}
+    embedding:
+      base-url: ${ATHENA_EMBEDDING_BASE_URL:http://localhost:1234/v1}
+      model: ${ATHENA_EMBEDDING_MODEL:text-embedding-bge-m3}
+      dimension: ${ATHENA_RAG_EMBEDDING_DIMENSION:1024}
+      read-timeout: 120s
+      batch-size: 32
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+
+logging:
+  structured:
+    format:
+      console: ${LOGGING_STRUCTURED_FORMAT:}
+  level:
+    com.athena: INFO

@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-add-daily-interviews
+      author: athena
+      changes:
+        - addColumn:
+            tableName: daily_progress
+            columns:
+              - column:
+                  name: interviews_completed
+                  type: int
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false

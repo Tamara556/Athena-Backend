@@ -13,6 +13,10 @@ spring:
               uri: lb://auth-service
               predicates:
                 - Path=/auth/**
+            - id: account-service
+              uri: lb://auth-service
+              predicates:
+                - Path=/account/**
             - id: user-plans
               uri: lb://learning-service
               predicates:
@@ -45,6 +49,14 @@ spring:
               uri: lb://badge-service
               predicates:
                 - Path=/badges/**
+            - id: rag-memory
+              uri: lb://rag-service
+              predicates:
+                - Path=/ai/memory/**
+            - id: rag-service
+              uri: lb://rag-service
+              predicates:
+                - Path=/rag/**
             - id: ai-service
               uri: lb://ai-service
               predicates:
@@ -53,6 +65,10 @@ spring:
               uri: lb://ai-service
               predicates:
                 - Path=/learning-sessions/**
+            - id: daily-journey
+              uri: lb://ai-service
+              predicates:
+                - Path=/daily-journey/**
             - id: interview-service
               uri: lb://interview-service
               predicates:

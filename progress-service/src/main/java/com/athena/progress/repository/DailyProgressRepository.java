@@ -13,4 +13,6 @@ public interface DailyProgressRepository extends JpaRepository<DailyProgress, UU
     Optional<DailyProgress> findByUserIdAndDate(UUID userId, LocalDate date);
 
     List<DailyProgress> findByUserIdAndDateBetweenOrderByDateAsc(UUID userId, LocalDate start, LocalDate end);
+
+    List<DailyProgress> findByUserIdOrderByDateAsc(UUID userId);
 }

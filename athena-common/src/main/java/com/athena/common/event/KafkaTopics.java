@@ -32,6 +32,15 @@ public final class KafkaTopics {
     public static final String LEARNING_SESSION_COMPLETED = "athena.learning.session.completed";
     public static final String NODE_BUFFER_REFILLED = "athena.learning.node.buffer.refilled";
 
+    public static final String DAILY_MISSION_GENERATED = "athena.daily.mission.generated";
+    public static final String DAILY_BLOCK_COMPLETED = "athena.daily.block.completed";
+    public static final String DAILY_BLOCK_SKIPPED = "athena.daily.block.skipped";
+    public static final String DAILY_MISSION_ADJUSTED = "athena.daily.mission.adjusted";
+    public static final String DAILY_CHECKIN_RECORDED = "athena.daily.checkin.recorded";
+    public static final String DAILY_REFLECTION_SAVED = "athena.daily.reflected";
+
+    public static final String MEMORY_DOCUMENT_INDEXED = "athena.memory.document.indexed";
+
     private KafkaTopics() {
     }
 }

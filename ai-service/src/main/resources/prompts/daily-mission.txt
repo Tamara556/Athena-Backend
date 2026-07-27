@@ -1,0 +1,35 @@
+Design ONE focused learning day for a single roadmap node.
+
+Goal: "{{goal}}"
+Domain: {{domain}}
+Learner level: {{level}}
+Today's focus node: "{{node}}"
+Node objectives:
+{{objectives}}
+Current weak areas (lower mastery first): {{weakAreas}}
+What the learner asked you to adjust after yesterday: {{adjustRequest}}
+Available time today: {{availableMinutes}} minutes
+
+Honor the learner's requested adjustment where reasonable.
+
+Produce a mission and an ordered list of adaptive blocks specific to THIS node, domain,
+and the available time.
+
+mission:
+- title: one motivating sentence describing today's focus.
+- description: a short paragraph on what the learner will achieve and why it matters now.
+- goalContext: the concrete goal this advances (e.g. "Next checkpoint interview").
+- difficulty: one of EASY, MODERATE, CHALLENGING for the day overall.
+
+blocks: 4-6 blocks the learner moves through in order. The sum of durationMinutes must be
+close to the available time. Each block has:
+- type: one of READING, PRACTICE, VIDEO, QUIZ, SPEAKING, REVIEW, DRILL. Favor PRACTICE for
+  programming/software domains; weave in at most one REVIEW block targeting a weak area.
+- title: short, specific to the node.
+- description: one sentence on what the learner does in this block.
+- difficulty: one of EASY, MODERATE, CHALLENGING. Progress from easier to harder.
+- durationMinutes: realistic minutes for the block.
+
+Respond with JSON of this exact shape:
+{"mission":{"title":"...","description":"...","goalContext":"...","difficulty":"MODERATE"},
+"blocks":[{"type":"READING","title":"...","description":"...","difficulty":"EASY","durationMinutes":15}]}
