@@ -3,8 +3,10 @@ package com.athena.progress.service.impl;
 import com.athena.common.exception.ResourceNotFoundException;
 import com.athena.progress.client.UserClient;
 import com.athena.progress.constants.ProgressConstants;
+import com.athena.progress.dto.DailyActivityResponse;
 import com.athena.progress.dto.ProgressResponse;
 import com.athena.progress.dto.ProgressUpdateRequest;
+import com.athena.progress.dto.StreakActivityResponse;
 import com.athena.progress.dto.WeeklySummaryResponse;
 import com.athena.progress.entity.DailyProgress;
 import com.athena.progress.entity.LearningProgress;
@@ -86,6 +88,34 @@ public class ProgressServiceImpl implements ProgressService {
         return new WeeklySummaryResponse(
                 userId, weekStart, today, totalTasks, totalMinutes, days.size(),
                 progress.getCurrentStreak(), days);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public StreakActivityResponse getStreakActivity(UUID userId) {
+        List<DailyActivityResponse> days = dailyProgressRepository.findByUserIdOrderByDateAsc(userId).stream()
+                .map(daily -> new DailyActivityResponse(
+                        daily.getDate(), daily.getTasksCompleted(), daily.getMinutesSpent(), daily.getInterviewsCompleted()))
+                .toList();
+        return new StreakActivityResponse(LocalDate.now(clock), days);
+    }
+
+    @Override
+    @CacheEvict(value = "progress", key = "#userId")
+    @Transactional
+    public void recordInterview(UUID userId) {
+        LocalDate today = LocalDate.now(clock);
+        LearningProgress progress = progressRepository.findById(userId)
+                .orElseGet(() -> new LearningProgress(userId));
+
+        DailyProgress daily = dailyProgressRepository.findByUserIdAndDate(userId, today)
+                .orElseGet(() -> new DailyProgress(userId, today));
+        daily.addInterview();
+        dailyProgressRepository.save(daily);
+
+        applyStreak(progress, today);
+        progress.setLastActivityDate(today);
+        progressRepository.save(progress);
     }
 
     private LearningProgress createForNewUser(UUID userId) {

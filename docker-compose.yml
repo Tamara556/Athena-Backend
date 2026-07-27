@@ -190,6 +190,23 @@ services:
       timeout: 5s
       retries: 10
 
+  rag-db:
+    image: pgvector/pgvector:pg17
+    container_name: athena-rag-db
+    environment:
+      POSTGRES_DB: athena_rag
+      POSTGRES_USER: athena
+      POSTGRES_PASSWORD: athena
+    ports:
+      - "5440:5432"
+    volumes:
+      - rag-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U athena -d athena_rag"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   # ---------- Business services ----------
   auth-service:
     build:
@@ -370,6 +387,39 @@ services:
       kafka:
         condition: service_healthy
 
+  rag-service:
+    build:
+      context: .
+      dockerfile: rag-service/Dockerfile
+    container_name: athena-rag-service
+    environment:
+      <<: *cloudwatch-env
+      SPRING_DATASOURCE_URL: jdbc:postgresql://rag-db:5432/athena_rag
+      SPRING_DATASOURCE_USERNAME: athena
+      SPRING_DATASOURCE_PASSWORD: athena
+      EUREKA_URI: http://discovery-server:8761/eureka/
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_DATA_REDIS_HOST: redis
+      ATHENA_AI_BASE_URL: ${ATHENA_AI_BASE_URL:-http://host.docker.internal:1234/v1}
+      ATHENA_AI_MODEL: ${ATHENA_AI_MODEL:-qwen3-14b}
+      ATHENA_EMBEDDING_BASE_URL: ${ATHENA_EMBEDDING_BASE_URL:-http://host.docker.internal:1234/v1}
+      ATHENA_EMBEDDING_MODEL: ${ATHENA_EMBEDDING_MODEL:-text-embedding-bge-m3}
+      ATHENA_RAG_EMBEDDING_DIMENSION: ${ATHENA_RAG_EMBEDDING_DIMENSION:-1024}
+      LOGGING_STRUCTURED_FORMAT: ecs
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8088:8088"
+    depends_on:
+      rag-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
   api-gateway:
     build:
       context: .
@@ -395,3 +445,4 @@ volumes:
   badge-db-data:
   ai-db-data:
   interview-db-data:
+  rag-db-data:

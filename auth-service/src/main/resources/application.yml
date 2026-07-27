@@ -43,6 +43,12 @@ athena:
       access-key: ${ATHENA_STORAGE_S3_ACCESS_KEY:test}
       secret-key: ${ATHENA_STORAGE_S3_SECRET_KEY:test}
       bucket: ${ATHENA_STORAGE_S3_BUCKET:athena-user-images}
+  sms:
+    provider: ${ATHENA_SMS_PROVIDER:log}
+    twilio:
+      account-sid: ${ATHENA_SMS_TWILIO_ACCOUNT_SID:}
+      auth-token: ${ATHENA_SMS_TWILIO_AUTH_TOKEN:}
+      from-number: ${ATHENA_SMS_TWILIO_FROM_NUMBER:}
 
 eureka:
   client:

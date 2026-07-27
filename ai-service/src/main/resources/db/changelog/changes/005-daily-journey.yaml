@@ -1,0 +1,158 @@
+databaseChangeLog:
+  - changeSet:
+      id: 015-create-daily-missions
+      author: athena
+      changes:
+        - createTable:
+            tableName: daily_missions
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_daily_missions, nullable: false } }
+              - column: { name: user_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: mission_date, type: date, constraints: { nullable: false } }
+              - column: { name: roadmap_id, type: uuid }
+              - column: { name: roadmap_node_id, type: uuid }
+              - column: { name: learning_session_id, type: uuid }
+              - column: { name: title, type: varchar(300), constraints: { nullable: false } }
+              - column: { name: description, type: text, constraints: { nullable: false } }
+              - column: { name: goal_context, type: varchar(300) }
+              - column: { name: difficulty, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: available_minutes, type: int, constraints: { nullable: false } }
+              - column: { name: estimated_minutes, type: int, constraints: { nullable: false } }
+              - column: { name: status, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: reasoning_json, type: text }
+              - column: { name: started_at, type: timestamp with time zone }
+              - column: { name: completed_at, type: timestamp with time zone }
+              - column: { name: generated_at, type: timestamp with time zone, constraints: { nullable: false } }
+              - column: { name: updated_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - addUniqueConstraint:
+            tableName: daily_missions
+            columnNames: user_id, mission_date
+            constraintName: uk_daily_mission_user_date
+        - createIndex:
+            tableName: daily_missions
+            indexName: idx_daily_mission_user_date
+            columns:
+              - column: { name: user_id }
+              - column: { name: mission_date }
+  - changeSet:
+      id: 016-create-daily-blocks
+      author: athena
+      changes:
+        - createTable:
+            tableName: daily_blocks
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_daily_blocks, nullable: false } }
+              - column:
+                  name: mission_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_daily_block_mission
+                    references: daily_missions(id)
+                    deleteCascade: true
+              - column: { name: user_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: order_index, type: int, constraints: { nullable: false } }
+              - column: { name: type, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: title, type: varchar(300), constraints: { nullable: false } }
+              - column: { name: description, type: text }
+              - column: { name: roadmap_node_id, type: uuid }
+              - column: { name: knowledge_node_id, type: uuid }
+              - column: { name: source_ref, type: uuid }
+              - column: { name: difficulty, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: duration_minutes, type: int, constraints: { nullable: false } }
+              - column: { name: status, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: progress_percent, type: int, constraints: { nullable: false } }
+              - column: { name: skip_reason, type: varchar(300) }
+              - column: { name: priority_insert, type: boolean, constraints: { nullable: false } }
+              - column: { name: started_at, type: timestamp with time zone }
+              - column: { name: completed_at, type: timestamp with time zone }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+              - column: { name: updated_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - createIndex:
+            tableName: daily_blocks
+            indexName: idx_daily_block_mission_order
+            columns:
+              - column: { name: mission_id }
+              - column: { name: order_index }
+  - changeSet:
+      id: 017-create-adjustment-logs
+      author: athena
+      changes:
+        - createTable:
+            tableName: adjustment_logs
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_adjustment_logs, nullable: false } }
+              - column:
+                  name: mission_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_adjustment_log_mission
+                    references: daily_missions(id)
+                    deleteCascade: true
+              - column: { name: user_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: type, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: reason, type: varchar(300), constraints: { nullable: false } }
+              - column: { name: affected_block_id, type: uuid }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - createIndex:
+            tableName: adjustment_logs
+            indexName: idx_adjustment_log_mission
+            columns:
+              - column: { name: mission_id }
+              - column: { name: created_at }
+  - changeSet:
+      id: 018-create-daily-checkins
+      author: athena
+      changes:
+        - createTable:
+            tableName: daily_checkins
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_daily_checkins, nullable: false } }
+              - column:
+                  name: mission_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_daily_checkin_mission
+                    references: daily_missions(id)
+                    deleteCascade: true
+              - column: { name: user_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: block_id, type: uuid }
+              - column: { name: confidence, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: topic, type: varchar(300) }
+              - column: { name: reply, type: text, constraints: { nullable: false } }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - createIndex:
+            tableName: daily_checkins
+            indexName: idx_daily_checkin_mission
+            columns:
+              - column: { name: mission_id }
+              - column: { name: created_at }
+  - changeSet:
+      id: 019-create-daily-reflections
+      author: athena
+      changes:
+        - createTable:
+            tableName: daily_reflections
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_daily_reflections, nullable: false } }
+              - column:
+                  name: mission_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_daily_reflection_mission
+                    references: daily_missions(id)
+                    deleteCascade: true
+              - column: { name: user_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: reflection_date, type: date, constraints: { nullable: false } }
+              - column: { name: hardest_part, type: text }
+              - column: { name: what_clicked, type: text }
+              - column: { name: adjust_request, type: text }
+              - column: { name: skipped, type: boolean, constraints: { nullable: false } }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - addUniqueConstraint:
+            tableName: daily_reflections
+            columnNames: user_id, reflection_date
+            constraintName: uk_daily_reflection_user_date

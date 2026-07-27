@@ -1,0 +1,26 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-create-rag-query-log
+      author: athena
+      changes:
+        - createTable:
+            tableName: rag_query_log
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_rag_query_log, nullable: false } }
+              - column: { name: user_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: query_text, type: text, constraints: { nullable: false } }
+              - column: { name: retrieved_count, type: int, constraints: { nullable: false } }
+              - column: { name: top_score, type: double precision }
+              - column: { name: grounded, type: boolean, constraints: { nullable: false } }
+              - column: { name: model, type: varchar(120) }
+              - column: { name: latency_ms, type: bigint, constraints: { nullable: false } }
+              - column: { name: prompt_tokens, type: int, constraints: { nullable: false } }
+              - column: { name: completion_tokens, type: int, constraints: { nullable: false } }
+              - column: { name: status, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - createIndex:
+            tableName: rag_query_log
+            indexName: idx_rag_query_log_user
+            columns:
+              - column: { name: user_id }
+              - column: { name: created_at }

@@ -6,6 +6,7 @@ import com.athena.auth.dto.LoginRequest;
 import com.athena.auth.dto.RefreshRequest;
 import com.athena.auth.dto.RegisterRequest;
 import com.athena.auth.entity.UserAccount;
+import com.athena.auth.repository.LoginEventRepository;
 import com.athena.auth.repository.UserAccountRepository;
 import com.athena.auth.service.impl.AuthServiceImpl;
 import com.athena.common.exception.DuplicateResourceException;
@@ -43,6 +44,8 @@ class AuthServiceImplTest {
     @Mock
     private UserAccountRepository userAccountRepository;
     @Mock
+    private LoginEventRepository loginEventRepository;
+    @Mock
     private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
     @Mock
     private JwtService jwtService;
@@ -50,6 +53,8 @@ class AuthServiceImplTest {
     private com.athena.auth.messaging.AuthEventPublisher eventPublisher;
     @Mock
     private UserImageService userImageService;
+    @Mock
+    private com.athena.auth.service.DeviceService deviceService;
 
     @InjectMocks
     private AuthServiceImpl authService;
@@ -70,6 +75,8 @@ class AuthServiceImplTest {
         lenient().when(jwtService.generateAccessToken(any(), anyList())).thenReturn("access-token");
         lenient().when(jwtService.generateRefreshToken(any(), anyList())).thenReturn("refresh-token");
         lenient().when(jwtService.getAccessTokenTtlSeconds()).thenReturn(900L);
+        lenient().when(deviceService.open(any(), any(), any(), any())).thenReturn(UUID.randomUUID());
+        lenient().when(deviceService.touch(any(), any())).thenReturn(UUID.randomUUID());
     }
 
     @Test
@@ -87,7 +94,7 @@ class AuthServiceImplTest {
         stubTokenIssuing();
 
         // No picture: image storage returns null and no image is persisted.
-        AuthResponse response = authService.register(request, null);
+        AuthResponse response = authService.register(request, null, "1.2.3.4", "JUnit");
 
         ArgumentCaptor<UserAccount> captor = ArgumentCaptor.forClass(UserAccount.class);
         verify(userAccountRepository).save(captor.capture());
@@ -125,7 +132,7 @@ class AuthServiceImplTest {
         when(userImageService.store(any(UUID.class), any())).thenReturn(id + "/pic.png");
         stubTokenIssuing();
 
-        AuthResponse response = authService.register(request, image);
+        AuthResponse response = authService.register(request, image, "1.2.3.4", "JUnit");
 
         // The picture is stored under the freshly generated user id (its own folder).
         ArgumentCaptor<UUID> userIdCaptor = ArgumentCaptor.forClass(UUID.class);
@@ -144,7 +151,7 @@ class AuthServiceImplTest {
         when(userAccountRepository.existsByEmailIgnoreCase("taken@example.com")).thenReturn(true);
 
         assertThatThrownBy(() -> authService.register(
-                new RegisterRequest("A", "B", "auser", "taken@example.com", "Password123!"), null))
+                new RegisterRequest("A", "B", "auser", "taken@example.com", "Password123!"), null, "1.2.3.4", "JUnit"))
                 .isInstanceOf(DuplicateResourceException.class);
 
         verify(userAccountRepository, never()).save(any());
@@ -156,7 +163,7 @@ class AuthServiceImplTest {
         when(userAccountRepository.existsByUsernameIgnoreCase("taken")).thenReturn(true);
 
         assertThatThrownBy(() -> authService.register(
-                new RegisterRequest("A", "B", "Taken", "free@example.com", "Password123!"), null))
+                new RegisterRequest("A", "B", "Taken", "free@example.com", "Password123!"), null, "1.2.3.4", "JUnit"))
                 .isInstanceOf(DuplicateResourceException.class);
 
         verify(userAccountRepository, never()).save(any());
@@ -172,7 +179,7 @@ class AuthServiceImplTest {
         when(passwordEncoder.matches("secret123", "stored-hash")).thenReturn(true);
         stubTokenIssuing();
 
-        AuthResponse response = authService.login(new LoginRequest("user@example.com", "secret123"));
+        AuthResponse response = authService.login(new LoginRequest("user@example.com", "secret123"), "1.2.3.4", "JUnit");
 
         assertThat(response.userId()).isEqualTo(id);
         assertThat(response.username()).isEqualTo("ada");
@@ -187,7 +194,7 @@ class AuthServiceImplTest {
         when(passwordEncoder.matches("secret123", "stored-hash")).thenReturn(true);
         stubTokenIssuing();
 
-        AuthResponse response = authService.login(new LoginRequest("Ada", "secret123"));
+        AuthResponse response = authService.login(new LoginRequest("Ada", "secret123"), "1.2.3.4", "JUnit");
 
         assertThat(response.userId()).isEqualTo(id);
     }
@@ -199,7 +206,7 @@ class AuthServiceImplTest {
                 .thenReturn(Optional.of(account));
         when(passwordEncoder.matches("wrong", "stored-hash")).thenReturn(false);
 
-        assertThatThrownBy(() -> authService.login(new LoginRequest("user@example.com", "wrong")))
+        assertThatThrownBy(() -> authService.login(new LoginRequest("user@example.com", "wrong"), "1.2.3.4", "JUnit"))
                 .isInstanceOf(InvalidCredentialsException.class);
     }
 
@@ -208,7 +215,7 @@ class AuthServiceImplTest {
         when(userAccountRepository.findByEmailIgnoreCaseOrUsernameIgnoreCase("ghost@example.com", "ghost@example.com"))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> authService.login(new LoginRequest("ghost@example.com", "whatever1")))
+        assertThatThrownBy(() -> authService.login(new LoginRequest("ghost@example.com", "whatever1"), "1.2.3.4", "JUnit"))
                 .isInstanceOf(InvalidCredentialsException.class);
     }
 
@@ -220,6 +227,7 @@ class AuthServiceImplTest {
         when(jwtService.parseAndValidate("valid-refresh", TokenType.REFRESH)).thenReturn(claims);
         when(jwtService.extractSubject(claims)).thenReturn(id.toString());
         when(userAccountRepository.findById(id)).thenReturn(Optional.of(account));
+        when(deviceService.activeByRefreshToken("valid-refresh")).thenReturn(new com.athena.auth.entity.DeviceSession());
         stubTokenIssuing();
 
         AuthResponse response = authService.refresh(new RefreshRequest("valid-refresh"));

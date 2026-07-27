@@ -2,6 +2,7 @@ package com.athena.progress.service;
 
 import com.athena.progress.dto.ProgressResponse;
 import com.athena.progress.dto.ProgressUpdateRequest;
+import com.athena.progress.dto.StreakActivityResponse;
 import com.athena.progress.dto.WeeklySummaryResponse;
 
 import java.util.UUID;
@@ -13,4 +14,8 @@ public interface ProgressService {
     ProgressResponse update(ProgressUpdateRequest request);
 
     WeeklySummaryResponse weeklySummary(UUID userId);
+
+    StreakActivityResponse getStreakActivity(UUID userId);
+
+    void recordInterview(UUID userId);
 }

@@ -1,5 +1,6 @@
 package com.athena.progress.messaging;
 
+import com.athena.common.event.InterviewEvaluatedEvent;
 import com.athena.common.event.KafkaTopics;
 import com.athena.common.event.StreakUpdatedEvent;
 import com.athena.common.event.TaskCompletedEvent;
@@ -38,5 +39,12 @@ public class ProgressEventConsumer {
                 progress.longestStreak(),
                 progress.totalCompletedTasks(),
                 Instant.now()));
+    }
+
+    @KafkaListener(topics = KafkaTopics.INTERVIEW_EVALUATED, groupId = "${spring.kafka.consumer.group-id}")
+    public void onInterviewEvaluated(String payload) {
+        InterviewEvaluatedEvent event = objectMapper.readValue(payload, InterviewEvaluatedEvent.class);
+        log.info("Received InterviewEvaluatedEvent userId={} interviewId={}", event.userId(), event.interviewId());
+        progressService.recordInterview(event.userId());
     }
 }

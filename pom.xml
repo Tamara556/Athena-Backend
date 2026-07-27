@@ -20,6 +20,7 @@
 
     <modules>
         <module>athena-common</module>
+        <module>athena-llm</module>
         <module>discovery-server</module>
         <module>api-gateway</module>
         <module>auth-service</module>
@@ -29,6 +30,7 @@
         <module>badge-service</module>
         <module>ai-service</module>
         <module>interview-service</module>
+        <module>rag-service</module>
     </modules>
 
     <properties>
@@ -64,6 +66,13 @@
             <dependency>
                 <groupId>com.athena</groupId>
                 <artifactId>athena-common</artifactId>
+                <version>${athena-common.version}</version>
+            </dependency>
+
+            <!-- Shared LLM provider abstraction (chat + embeddings) -->
+            <dependency>
+                <groupId>com.athena</groupId>
+                <artifactId>athena-llm</artifactId>
                 <version>${athena-common.version}</version>
             </dependency>
 

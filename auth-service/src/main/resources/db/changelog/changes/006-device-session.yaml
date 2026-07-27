@@ -1,0 +1,61 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-device-session
+      author: athena
+      comment: >-
+        A signed-in device (session) per login. Stores the hash of the issued
+        refresh token so the session can be revoked ("sign out this device"):
+        once revoked, that refresh token is rejected and the short-lived access
+        token expires on its own.
+      changes:
+        - createTable:
+            tableName: device_session
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: device_label
+                  type: varchar(120)
+              - column:
+                  name: user_agent
+                  type: varchar(400)
+              - column:
+                  name: ip_address
+                  type: varchar(64)
+              - column:
+                  name: refresh_token_hash
+                  type: varchar(64)
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_seen_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+              - column:
+                  name: revoked_at
+                  type: timestamptz
+        - createIndex:
+            tableName: device_session
+            indexName: idx_device_session_user
+            columns:
+              - column:
+                  name: user_id
+        - createIndex:
+            tableName: device_session
+            indexName: idx_device_session_refresh_hash
+            columns:
+              - column:
+                  name: refresh_token_hash

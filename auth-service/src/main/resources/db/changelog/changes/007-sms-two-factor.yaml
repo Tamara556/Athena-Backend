@@ -1,0 +1,43 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007-sms-two-factor-columns
+      author: athena
+      comment: >-
+        Switch two-factor from authenticator-app (TOTP) to SMS. Drop the TOTP
+        secrets and add the phone number plus the hash/expiry of the current
+        outstanding SMS code (used for both setup and disable).
+      changes:
+        - dropColumn:
+            tableName: user_account
+            columnName: two_factor_secret
+        - dropColumn:
+            tableName: user_account
+            columnName: two_factor_pending_secret
+        - addColumn:
+            tableName: user_account
+            columns:
+              - column:
+                  name: phone_number
+                  type: varchar(20)
+              - column:
+                  name: two_factor_pending_phone
+                  type: varchar(20)
+              - column:
+                  name: two_factor_code_hash
+                  type: varchar(64)
+              - column:
+                  name: two_factor_code_expires_at
+                  type: timestamptz
+  - changeSet:
+      id: 007-two-factor-challenge-code
+      author: athena
+      comment: >-
+        The login challenge now carries the hash of the SMS code texted to the
+        user for that sign-in attempt.
+      changes:
+        - addColumn:
+            tableName: two_factor_challenge
+            columns:
+              - column:
+                  name: code_hash
+                  type: varchar(64)

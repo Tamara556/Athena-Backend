@@ -1,0 +1,45 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-create-memory-chunks
+      author: athena
+      changes:
+        - createTable:
+            tableName: memory_chunk
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_memory_chunk, nullable: false } }
+              - column:
+                  name: document_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_memory_chunk_document
+                    references: memory_document(id)
+                    deleteCascade: true
+              - column: { name: user_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: chunk_index, type: int, constraints: { nullable: false } }
+              - column: { name: content, type: text, constraints: { nullable: false } }
+              - column: { name: token_count, type: int, constraints: { nullable: false } }
+              - column: { name: embedding, type: vector(1024), constraints: { nullable: false } }
+              - column: { name: metadata, type: jsonb, constraints: { nullable: false } }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - createIndex:
+            tableName: memory_chunk
+            indexName: idx_memory_chunk_user
+            columns:
+              - column: { name: user_id }
+        - createIndex:
+            tableName: memory_chunk
+            indexName: idx_memory_chunk_document
+            columns:
+              - column: { name: document_id }
+  - changeSet:
+      id: 003b-create-hnsw-index
+      author: athena
+      changes:
+        - sql:
+            dbms: postgresql
+            sql: CREATE INDEX idx_memory_chunk_embedding ON memory_chunk USING hnsw (embedding vector_cosine_ops)
+      rollback:
+        - sql:
+            dbms: postgresql
+            sql: DROP INDEX IF EXISTS idx_memory_chunk_embedding

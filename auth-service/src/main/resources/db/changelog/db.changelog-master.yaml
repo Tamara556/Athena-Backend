@@ -5,3 +5,11 @@ databaseChangeLog:
       file: db/changelog/changes/002-add-user-identity-fields.yaml
   - include:
       file: db/changelog/changes/003-add-user-image.yaml
+  - include:
+      file: db/changelog/changes/004-login-activity.yaml
+  - include:
+      file: db/changelog/changes/005-two-factor.yaml
+  - include:
+      file: db/changelog/changes/006-device-session.yaml
+  - include:
+      file: db/changelog/changes/007-sms-two-factor.yaml

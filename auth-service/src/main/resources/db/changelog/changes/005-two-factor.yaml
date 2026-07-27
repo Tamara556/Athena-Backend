@@ -1,0 +1,51 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-two-factor-columns
+      author: athena
+      comment: >-
+        TOTP two-factor authentication state on the account: whether it is
+        enabled, the active shared secret, and a pending secret used only during
+        setup (before the first code is confirmed).
+      changes:
+        - addColumn:
+            tableName: user_account
+            columns:
+              - column:
+                  name: two_factor_enabled
+                  type: boolean
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: two_factor_secret
+                  type: varchar(64)
+              - column:
+                  name: two_factor_pending_secret
+                  type: varchar(64)
+  - changeSet:
+      id: 005-two-factor-challenge
+      author: athena
+      comment: >-
+        Short-lived challenge issued after a correct password when 2FA is on; the
+        opaque id is returned to the client and exchanged (with a valid TOTP code)
+        for tokens. It is never a valid access token.
+      changes:
+        - createTable:
+            tableName: two_factor_challenge
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: expires_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false

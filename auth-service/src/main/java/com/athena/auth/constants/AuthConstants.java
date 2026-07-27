@@ -41,4 +41,23 @@ public final class AuthConstants {
     public static final String USERNAME_ALREADY_TAKEN = "This username is already taken";
     public static final String REFRESH_TOKEN_INVALID = "Refresh token is invalid or expired";
     public static final String ACCOUNT_NO_LONGER_EXISTS = "Account no longer exists";
+
+    public static final String CURRENT_PASSWORD_REQUIRED = "currentPassword is required";
+    public static final String CURRENT_PASSWORD_INCORRECT = "Current password is incorrect";
+    public static final String ACCOUNT_RESOURCE_NAME = "Account";
+
+    public static final String PHONE_PATTERN = "^\\+?[0-9]{8,15}$";
+    public static final String PHONE_REQUIRED = "Phone number is required";
+    public static final String PHONE_INVALID = "Enter a valid phone number (8-15 digits, optional +)";
+
+    public static final String TWO_FACTOR_CODE_INVALID = "That verification code isn't valid";
+    public static final String TWO_FACTOR_CODE_EXPIRED = "That code has expired — request a new one";
+    public static final String TWO_FACTOR_SETUP_REQUIRED = "Enter your phone number first";
+    public static final String TWO_FACTOR_ALREADY_ENABLED = "Two-factor is already enabled";
+    public static final String TWO_FACTOR_NOT_ENABLED = "Two-factor isn't enabled";
+    public static final String TWO_FACTOR_CHALLENGE_INVALID = "Sign in again to continue";
+    public static final String TWO_FACTOR_CHALLENGE_EXPIRED = "Your verification window expired — sign in again";
+    public static final String TWO_FACTOR_SMS_MESSAGE = "Your Athena verification code is %s";
+
+    public static final String DEVICE_RESOURCE_NAME = "Device";
 }

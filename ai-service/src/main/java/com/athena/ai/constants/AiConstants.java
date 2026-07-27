@@ -14,6 +14,10 @@ public final class AiConstants {
     public static final String PROMPT_INTERVIEW_EVALUATION = "INTERVIEW_EVALUATION";
     public static final String PROMPT_BADGE_SUGGESTIONS = "BADGE_SUGGESTIONS";
     public static final String PROMPT_LEARNING_SESSION = "LEARNING_SESSION";
+    public static final String PROMPT_DAILY_MISSION = "DAILY_MISSION";
+    public static final String PROMPT_WHY_REASONING = "WHY_REASONING";
+    public static final String PROMPT_WEAKNESS_DRILL = "WEAKNESS_DRILL";
+    public static final String PROMPT_MENTOR_REPLY = "MENTOR_REPLY";
 
     public static final String TPL_SYSTEM = "system";
     public static final String TPL_ASSESSMENT = "assessment";
@@ -24,6 +28,10 @@ public final class AiConstants {
     public static final String TPL_INTERVIEW_EVALUATION = "interview-evaluation";
     public static final String TPL_BADGE_SUGGESTIONS = "badge-suggestions";
     public static final String TPL_LEARNING_SESSION = "learning-session";
+    public static final String TPL_DAILY_MISSION = "daily-mission";
+    public static final String TPL_WHY_REASONING = "why-reasoning";
+    public static final String TPL_WEAKNESS_DRILL = "weakness-drill";
+    public static final String TPL_MENTOR_REPLY = "mentor-reply";
 
     public static final String RESOURCE_ONBOARDING = "Onboarding session";
     public static final String RESOURCE_ROADMAP = "Roadmap";
@@ -33,6 +41,19 @@ public final class AiConstants {
 
     public static final String CACHE_LEARNING_SESSION = "learning-session";
     public static final int LEARNING_SESSION_BUFFER = 5;
+
+    public static final String CACHE_DAILY_JOURNEY = "daily-journey";
+    public static final String RESOURCE_DAILY_MISSION = "Daily mission";
+    public static final String RESOURCE_DAILY_BLOCK = "Daily block";
+
+    public static final int WEAKNESS_MASTERY_THRESHOLD = 70;
+    public static final int DEFAULT_AVAILABLE_MINUTES = 105;
+    public static final int MAX_WEAKNESS_BLOCKS = 2;
+    public static final int SKIP_ADAPT_THRESHOLD = 3;
+    public static final double FAST_COMPLETION_RATIO = 0.5;
+    public static final int LOW_CONFIDENCE_PERCENT = 60;
+    public static final int MASTERY_DRILL_DELTA = 4;
+    public static final int MIN_BLOCK_MINUTES = 5;
 
     public static final String RETRY_ASSESSMENT = "ONBOARDING_ASSESSMENT";
     public static final String RETRY_COMPLETE = "ONBOARDING_COMPLETE";

@@ -3,6 +3,7 @@ package com.athena.progress.controller;
 import com.athena.common.security.AuthHeaders;
 import com.athena.progress.dto.ProgressResponse;
 import com.athena.progress.dto.ProgressUpdateRequest;
+import com.athena.progress.dto.StreakActivityResponse;
 import com.athena.progress.dto.WeeklySummaryResponse;
 import com.athena.progress.service.ProgressService;
 import jakarta.validation.Valid;
@@ -28,6 +29,11 @@ public class ProgressController {
     @GetMapping("/me")
     public ResponseEntity<ProgressResponse> getMyProgress(@RequestHeader(AuthHeaders.USER_ID) UUID userId) {
         return ResponseEntity.ok(progressService.getProgress(userId));
+    }
+
+    @GetMapping("/streaks")
+    public ResponseEntity<StreakActivityResponse> streaks(@RequestHeader(AuthHeaders.USER_ID) UUID userId) {
+        return ResponseEntity.ok(progressService.getStreakActivity(userId));
     }
 
     @GetMapping("/{userId}")

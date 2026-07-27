@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-watching-video-id
+      author: athena
+      comment: >-
+        Store a real YouTube video id per watching material so lessons can be
+        watched embedded in-site instead of linking out. Nullable — older rows
+        and any the model couldn't supply fall back to the search query.
+      changes:
+        - addColumn:
+            tableName: watching_materials
+            columns:
+              - column:
+                  name: video_id
+                  type: varchar(20)

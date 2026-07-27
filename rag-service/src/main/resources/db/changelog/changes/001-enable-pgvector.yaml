@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-enable-pgvector
+      author: athena
+      changes:
+        - sql:
+            dbms: postgresql
+            sql: CREATE EXTENSION IF NOT EXISTS vector
+      rollback:
+        - sql:
+            dbms: postgresql
+            sql: DROP EXTENSION IF EXISTS vector

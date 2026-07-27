@@ -1,0 +1,42 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-login-activity
+      author: athena
+      comment: >-
+        Records successful sign-ins so the account owner can review recent login
+        activity (IP, device/user-agent, time).
+      changes:
+        - createTable:
+            tableName: login_event
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: ip_address
+                  type: varchar(64)
+              - column:
+                  name: user_agent
+                  type: varchar(400)
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+        - createIndex:
+            tableName: login_event
+            indexName: idx_login_event_user_created
+            columns:
+              - column:
+                  name: user_id
+              - column:
+                  name: created_at
+                  descending: true

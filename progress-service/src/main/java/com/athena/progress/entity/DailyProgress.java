@@ -40,6 +40,9 @@ public class DailyProgress {
     @Column(name = "minutes_spent", nullable = false)
     private int minutesSpent;
 
+    @Column(name = "interviews_completed", nullable = false)
+    private int interviewsCompleted;
+
     public DailyProgress(UUID userId, LocalDate date) {
         this.userId = userId;
         this.date = date;
@@ -48,5 +51,9 @@ public class DailyProgress {
     public void add(int tasks, int minutes) {
         this.tasksCompleted += tasks;
         this.minutesSpent += minutes;
+    }
+
+    public void addInterview() {
+        this.interviewsCompleted += 1;
     }
 }

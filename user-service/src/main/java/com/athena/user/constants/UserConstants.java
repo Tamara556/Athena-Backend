@@ -29,4 +29,11 @@ public final class UserConstants {
     // Service messages
     public static final String RESOURCE_NAME = "User profile";
     public static final String PROFILE_ALREADY_EXISTS = "A profile already exists for user %s";
+
+    // Settings
+    public static final int SETTING_VALUE_MAX_LENGTH = 20;
+    public static final String DEFAULT_AVAILABILITY = "2h";
+    public static final String DEFAULT_DIFFICULTY = "balanced";
+    public static final String DEFAULT_STYLE = "practical";
+    public static final String DEFAULT_TONE = "encouraging";
 }

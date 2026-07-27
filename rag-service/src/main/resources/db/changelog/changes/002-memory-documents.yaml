@@ -1,0 +1,30 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-create-memory-documents
+      author: athena
+      changes:
+        - createTable:
+            tableName: memory_document
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, primaryKeyName: pk_memory_document, nullable: false } }
+              - column: { name: user_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: source_type, type: varchar(40), constraints: { nullable: false } }
+              - column: { name: entity_id, type: uuid }
+              - column: { name: learning_domain, type: varchar(120) }
+              - column: { name: category, type: varchar(60) }
+              - column: { name: visibility, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: title, type: varchar(300) }
+              - column: { name: content_hash, type: varchar(64), constraints: { nullable: false } }
+              - column: { name: status, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+              - column: { name: updated_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - addUniqueConstraint:
+            tableName: memory_document
+            columnNames: user_id, source_type, entity_id
+            constraintName: uk_memory_document_source
+        - createIndex:
+            tableName: memory_document
+            indexName: idx_memory_document_user_source
+            columns:
+              - column: { name: user_id }
+              - column: { name: source_type }
