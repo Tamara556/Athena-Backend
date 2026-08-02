@@ -1,5 +1,7 @@
 # Athena Backend — Version 1
 
+Test GitHub Actions
+
 **Athena** is an AI Learning Operating System. This repository is **Version 1: the backend core only** — no AI, no frontend, no messaging. It delivers a production-shaped Spring Boot microservices system: authentication, user profiles, and learning-progress tracking, fronted by an API Gateway and tied together with service discovery.
 
 ---
