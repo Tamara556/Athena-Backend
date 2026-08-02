@@ -8,6 +8,10 @@ on:
   release:
     types: [published]
   workflow_dispatch: {}
+  # TEMPORARY - for verifying Discord delivery end-to-end, removed after confirming
+  push:
+    branches:
+      - master
 
 permissions:
   contents: read
@@ -180,6 +184,32 @@ jobs:
                   { name: "Released by", value: $author, inline: true },
                   { name: "Repository", value: $repo, inline: true },
                   { name: "Link", value: $url }
+                ],
+                timestamp: $ts
+              }]
+            }')
+          curl -sf -H "Content-Type: application/json" -X POST -d "$PAYLOAD" "$DISCORD_WEBHOOK"
+
+      # TEMPORARY - for verifying Discord delivery end-to-end, removed after confirming
+      - name: Push test ping
+        if: github.event_name == 'push'
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          REPO: ${{ github.repository }}
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          PAYLOAD=$(jq -n \
+            --arg title "🦉 Athena Contribution" \
+            --arg desc "✅ Push-trigger test — verifying the Discord webhook end-to-end." \
+            --arg repo "$REPO" \
+            --arg ts "$TIMESTAMP" \
+            '{
+              embeds: [{
+                title: $title,
+                description: $desc,
+                color: 3066993,
+                fields: [
+                  { name: "Repository", value: $repo }
                 ],
                 timestamp: $ts
               }]
