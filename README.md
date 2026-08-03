@@ -1,216 +1,229 @@
-# Athena Backend — Version 1
+<div align="center">
 
-Test GitHub Actions
+# Athena Backend
 
-**Athena** is an AI Learning Operating System. This repository is **Version 1: the backend core only** — no AI, no frontend, no messaging. It delivers a production-shaped Spring Boot microservices system: authentication, user profiles, and learning-progress tracking, fronted by an API Gateway and tied together with service discovery.
+**An AI Learning Operating System — the backend platform.**
 
----
+[![CI](https://github.com/Tamara556/Athena-Backend/actions/workflows/ci.yml/badge.svg)](https://github.com/Tamara556/Athena-Backend/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Java 26](https://img.shields.io/badge/Java-26-orange.svg)](pom.xml)
+[![Spring Boot 4](https://img.shields.io/badge/Spring%20Boot-4.0.5-brightgreen.svg)](pom.xml)
 
-## 1. Architecture overview
-
-```
-                         ┌────────────────────────┐
-   client  ──────────►   │     api-gateway        │   :8080   (only public port)
-   (Bearer JWT)          │  • routing (lb://)     │
-                         │  • JWT validation      │
-                         │  • injects identity    │
-                         └───────────┬────────────┘
-                                     │  X-User-Id / X-User-Roles
-             ┌───────────────────────┼───────────────────────────┐
-             ▼                       ▼                           ▼
-   ┌──────────────────┐   ┌──────────────────┐        ┌──────────────────────┐
-   │   auth-service   │   │   user-service   │◄───────│   progress-service   │
-   │      :8081       │   │      :8082       │ OpenFeign│       :8083          │
-   │  issues JWTs     │   │  profiles        │ lb://    │  progress + streaks  │
-   └────────┬─────────┘   └────────┬─────────┘        └──────────┬───────────┘
-            │                      │                             │
-      ┌─────▼─────┐          ┌─────▼─────┐                 ┌──────▼──────┐
-      │ auth-db   │          │ user-db   │                 │ progress-db │   (one DB per service)
-      │ postgres  │          │ postgres  │                 │ postgres    │
-      └───────────┘          └───────────┘                 └─────────────┘
-
-                         ┌────────────────────────┐
-   all services  ───►    │   discovery-server     │   :8761   (Eureka registry)
-                         └────────────────────────┘
-```
-
-**Key decisions**
-
-- **Centralised auth at the edge.** Only the gateway validates JWTs. On success it forwards the verified identity downstream as trusted `X-User-Id` / `X-User-Roles` headers, and *strips any client-supplied copies* so they cannot be spoofed. Downstream services stay simple and never re-validate tokens.
-- **Database per service.** No service touches another service's schema. Each has its own Postgres instance.
-- **Service-to-service via discovery.** `progress-service` calls `user-service` through **OpenFeign** + Eureka (`lb://user-service`) to confirm a user exists before tracking progress.
-- **Shared library (`athena-common`).** Holds only cross-cutting contracts used by more than one module: the `JwtService` (sign + verify), the uniform `ApiError` shape, the reusable `GlobalExceptionHandler` base, and shared exceptions. It is framework-light so both the servlet services and the reactive gateway can depend on it.
-- **Clean layering everywhere:** `controller → service → repository`, DTOs at every boundary, entities never leave the service layer.
+</div>
 
 ---
 
-## 2. Tech stack
+## Overview
 
-| Concern            | Choice                                              |
-|--------------------|-----------------------------------------------------|
-| Language           | Java 26                                             |
-| Framework          | Spring Boot 4.0.5                                    |
-| Cloud              | Spring Cloud 2025.1.1 (Oakwood) — Eureka, Gateway (WebFlux), OpenFeign |
-| Persistence        | Spring Data JPA / Hibernate, PostgreSQL 17          |
-| Migrations         | Liquibase                                           |
-| Auth               | JWT (JJWT) with access + refresh tokens, BCrypt     |
-| Validation         | Jakarta Validation                                  |
-| Build              | Maven (multi-module), Maven Wrapper                 |
-| Tests              | JUnit 5, Mockito, MockMvc, WebFlux `MockServerWebExchange` |
-| Containerisation   | Docker, Docker Compose                              |
+**Athena** is an AI Learning Operating System: instead of a static course catalogue, it
+builds a personalized, continuously adapting curriculum around one learner — an
+AI-generated roadmap, a daily "mission" that adjusts itself based on how the day is
+actually going, weekly interviews that measure real skill, a knowledge graph that tracks
+mastery per topic, and a memory layer the learner can query for grounded answers about
+their own progress.
 
----
+This repository is the **backend platform**: 12 Spring Boot microservices, one Postgres
+database per service, Kafka event choreography, Redis caching, Eureka service discovery,
+and a local LLM (via [LM Studio](https://lmstudio.ai)) doing every piece of AI reasoning
+— no external paid AI API. The companion Angular frontend lives in a
+[separate repository](https://github.com/Tamara556/Athena-Frontend) (see
+[`docs/Frontend.md`](docs/Frontend.md)).
 
-## 3. Module / folder structure
+**Who this is for:** engineers interested in a realistic, non-toy example of an
+event-driven Spring Boot microservices system with a local-LLM AI layer wired all the
+way through — onboarding, content generation, adaptive planning, evaluation, and
+retrieval-augmented memory — built with clean service boundaries and no shared database.
 
-```
-athena-backend-parent/                 (aggregator POM, dependency management)
-├── athena-common/                     shared JWT, ApiError, exception handler
-├── discovery-server/                  Eureka registry              :8761
-├── api-gateway/                       routing + JWT filter         :8080
-├── auth-service/                      register / login / refresh   :8081
-├── user-service/                      profile CRUD                 :8082
-├── progress-service/                  progress + weekly summary    :8083
-├── docker-compose.yml                 full local stack
-├── postman/Athena.postman_collection.json
-└── README.md
-```
-
-Every service follows the same package layout:
-
-```
-com.athena.<service>.controller   // thin HTTP adapters, no business logic
-com.athena.<service>.service      // business logic (interface + impl)
-com.athena.<service>.repository   // Spring Data repositories
-com.athena.<service>.dto          // request/response records
-com.athena.<service>.entity       // JPA entities (never exposed)
-com.athena.<service>.config       // beans & configuration properties
-com.athena.<service>.web          // @RestControllerAdvice
-```
+**Project goals:** keep AI reasoning centralized and swappable (one integration point,
+structured outputs, graceful degradation on LLM outages), keep services independently
+deployable and boring to operate (DB-per-service, gateway-only auth, event
+choreography over synchronous chains), and keep the whole thing honestly documented as
+it grows — see [`docs/Architecture.md`](docs/Architecture.md) for an explicit strengths/
+weaknesses review of the current design, not just a sales pitch.
 
 ---
 
-## 4. Running it
+## Features
+
+| Category | What's implemented |
+|---|---|
+| **Authentication & Security** | Register/login/refresh (JWT), phone-based 2FA, device-session management, login-activity history, password/email change, self-service data export, S3-backed avatar upload |
+| **AI Onboarding** | Event-driven onboarding triggered by registration; goal capture → adaptive assessment → domain/level analysis, generated by a local LLM |
+| **Roadmap** | AI-generated learning roadmap (phases/nodes) from the onboarding analysis, with per-phase completion tracking |
+| **Daily Journey** | A daily, block-by-block adaptive learning plan that reprioritizes itself from completion speed, quiz confidence, and check-ins — see [`docs/DAILY-JOURNEY.md`](docs/DAILY-JOURNEY.md) |
+| **Learning Sessions** | Per-roadmap-node generated lesson content (readings, videos, practice, quizzes), kept a rolling 5-node lookahead ahead of the learner |
+| **Knowledge Graph** | Per-skill mastery/confidence tracking, seeded from onboarding and updated from interview weaknesses and quiz results, with a visualization + history API |
+| **Interviews** | Weekly AI-generated assessments, evaluated by the LLM, feeding weaknesses back into the Knowledge Graph |
+| **RAG Memory** | Document ingestion → chunking → embeddings (pgvector) → grounded Q&A with citations, plus similarity search and "what's next" recommendations |
+| **Progress & Streaks** | Task-completion metrics, daily streaks, rolling 7-day summaries, event-driven from learning activity |
+| **Achievements / Badges** | Rule-based badge awards (streaks, task counts) and AI-suggested badges (validated before persisting) |
+| **Microservices Platform** | Eureka discovery, gateway-centralized JWT auth, Kafka event backbone (~28 event types), Redis caching, database-per-service |
+
+Full endpoint-level detail: [`docs/API.md`](docs/API.md) and
+[`docs/Backend.md`](docs/Backend.md).
+
+---
+
+## Architecture
+
+```mermaid
+graph LR
+    client(["Client"]) -->|"Bearer JWT"| gw["api-gateway :8080"]
+    gw --> auth["auth-service"]
+    gw --> user["user-service"]
+    gw --> progress["progress-service"]
+    gw --> learning["learning-service"]
+    gw --> badge["badge-service"]
+    gw --> ai["ai-service"]
+    gw --> interview["interview-service"]
+    gw --> rag["rag-service"]
+    ai --> lm[("LM Studio<br/>local LLM")]
+    rag --> lm
+    gw -.-> eureka[("discovery-server")]
+```
+
+Each service owns its own PostgreSQL database; cross-service side effects flow through
+Kafka rather than direct calls (registration → auto-onboarding, task completion →
+progress → badges, interview evaluation → knowledge graph, and more). The full diagram
+set — service graph, request flow, event flow — plus every design decision and an
+explicit strengths/weaknesses review lives in **[`docs/Architecture.md`](docs/Architecture.md)**.
+
+---
+
+## Tech stack
+
+| Concern | Choice |
+|---|---|
+| Language | Java 26 |
+| Framework | Spring Boot 4.0.5 |
+| Cloud | Spring Cloud 2025.1.1 (Oakwood) — Eureka, Gateway (WebFlux), OpenFeign |
+| Persistence | Spring Data JPA / Hibernate, PostgreSQL 17 (+ pgvector for `rag-service`) |
+| Migrations | Liquibase |
+| Messaging | Apache Kafka (KRaft mode) |
+| Caching | Redis |
+| Auth | JWT (JJWT), BCrypt, phone-based 2FA (Twilio) |
+| AI | Local LLM via LM Studio (OpenAI-compatible), structured/schema-enforced outputs |
+| Object storage | S3-compatible (LocalStack locally) |
+| Observability | Structured (ECS) logging, Micrometer + Brave tracing, optional CloudWatch shipping |
+| Build | Maven (multi-module), Maven Wrapper |
+| Tests | JUnit 5, Mockito, MockMvc, WebFlux `MockServerWebExchange` |
+| Containerization | Docker, Docker Compose |
+| Frontend (separate repo) | Angular 20, Signals |
+
+---
+
+## Folder structure
+
+```
+athena-backend-parent/
+├── athena-common/      shared JWT, ApiError, exceptions, S3 storage, CloudWatch logging, Kafka events
+├── athena-llm/          shared LLM provider abstraction (LM Studio)
+├── discovery-server/    Eureka registry                              :8761
+├── api-gateway/         routing + JWT filter                         :8080
+├── auth-service/        accounts, JWT, 2FA, devices, export          :8081
+├── user-service/        profiles + settings                          :8082
+├── progress-service/    progress + streaks                           :8083
+├── learning-service/    plans, tasks, sessions                       :8084
+├── badge-service/       badge catalogue + awards                     :8085
+├── ai-service/          LLM orchestration (onboarding→RAG's neighbor) :8086
+├── interview-service/   weekly interviews                            :8087
+├── rag-service/         memory, retrieval, recommendations            :8088
+├── docs/                full documentation set (see below)
+├── postman/             Postman collections
+├── docker-compose.yml   full local stack
+└── pom.xml               aggregator POM
+```
+
+Full annotated tree: [`docs/Project-Structure.md`](docs/Project-Structure.md).
+
+---
+
+## Getting started
 
 ### Prerequisites
-- Docker + Docker Compose **(recommended path — needs nothing else installed)**, or
-- JDK 26 + the bundled Maven Wrapper for a local run.
+- Docker + Docker Compose **(recommended — nothing else required)**, or JDK 26 + the
+  bundled Maven Wrapper for a local run.
+- [LM Studio](https://lmstudio.ai) running locally with a chat model (e.g. `qwen3-14b`)
+  and an embedding model (`text-embedding-bge-m3`) loaded, for AI-backed features.
 
-### Option A — Docker Compose (everything)
-
+### Run everything
 ```bash
 docker compose up --build
 ```
-
-This starts the Eureka registry, three Postgres instances, all three services, and the gateway. Wait until the services register (≈30–60s). Then hit the gateway:
-
+Brings up Eureka, Kafka, Redis, all 9 Postgres databases, and all 10 runnable services.
+Wait ~60–90s for full registration, then:
 ```bash
-# Register (returns access + refresh tokens and your userId)
 curl -s -X POST http://localhost:8080/auth/register \
-  -H 'Content-Type: application/json' \
-  -d '{"email":"ada@example.com","password":"Password123!"}'
+  -F email=ada@example.com -F password=Password123!
 ```
+Tear down (and wipe data): `docker compose down -v`
 
-Tear down (and wipe data):
-
+### Run locally without Docker
 ```bash
-docker compose down -v
+./mvnw clean install
+./mvnw -pl discovery-server spring-boot:run   # first
+./mvnw -pl <service> spring-boot:run           # any/all of the rest
 ```
 
-### Option B — Local (Maven Wrapper)
-
-> The wrapper must run on **JDK 26**. If your `JAVA_HOME` points elsewhere, set it first:
-> `export JAVA_HOME=/path/to/jdk-26` (Windows PowerShell: `$env:JAVA_HOME='C:\Program Files\Java\jdk-26.0.1'`).
-
-1. Start three Postgres databases (or just use the compose DBs: `docker compose up auth-db user-db progress-db`). Default local ports: `5433/5434/5435`.
-2. Build everything: `./mvnw clean install`
-3. Run each module (separate terminals), **discovery first**:
-   ```bash
-   ./mvnw -pl discovery-server   spring-boot:run
-   ./mvnw -pl auth-service       spring-boot:run
-   ./mvnw -pl user-service       spring-boot:run
-   ./mvnw -pl progress-service   spring-boot:run
-   ./mvnw -pl api-gateway        spring-boot:run
-   ```
-
-Configuration is environment-driven (`SPRING_DATASOURCE_URL`, `EUREKA_URI`, `ATHENA_JWT_SECRET`, `LOGGING_STRUCTURED_FORMAT`); sensible localhost defaults are baked into each `application.yml`.
+Full walkthrough, including running a single module against the rest of the Docker
+stack: **[`docs/Development.md`](docs/Development.md)**.
 
 ---
 
-## 5. API reference (all via the gateway, `http://localhost:8080`)
+## API
 
-| Method | Path                          | Auth        | Purpose                            |
-|--------|-------------------------------|-------------|------------------------------------|
-| POST   | `/auth/register`              | public      | Create account, returns tokens     |
-| POST   | `/auth/login`                 | public      | Authenticate, returns tokens       |
-| POST   | `/auth/refresh`               | public¹     | Rotate tokens from a refresh token |
-| POST   | `/users`                      | Bearer      | Create profile (linked to userId)  |
-| GET    | `/users/{id}`                 | Bearer      | Fetch profile                      |
-| PUT    | `/users/{id}`                 | Bearer      | Replace profile                    |
-| POST   | `/progress/update`            | Bearer      | Record a study session (increments)|
-| GET    | `/progress/{userId}`          | Bearer      | Current totals + streak            |
-| GET    | `/progress/summary/{userId}`  | Bearer      | Rolling 7-day summary              |
-
-¹ `/auth/**` is public at the gateway; the refresh token itself is validated inside auth-service.
-
-### Example end-to-end flow (curl)
-
-```bash
-BASE=http://localhost:8080
-
-# 1) Register and capture token + id
-RESP=$(curl -s -X POST $BASE/auth/register -H 'Content-Type: application/json' \
-  -d '{"email":"ada@example.com","password":"Password123!"}')
-TOKEN=$(echo "$RESP" | jq -r .accessToken)
-UID=$(echo "$RESP" | jq -r .userId)
-
-# 2) Create profile
-curl -s -X POST $BASE/users -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
-  -d "{\"userId\":\"$UID\",\"name\":\"Ada\",\"age\":30,\"goal\":\"Master DS\",\"dailyStudyHours\":2.5}"
-
-# 3) Log a study session
-curl -s -X POST $BASE/progress/update -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
-  -d "{\"userId\":\"$UID\",\"tasksCompleted\":3,\"minutesSpent\":45}"
-
-# 4) Weekly summary
-curl -s $BASE/progress/summary/$UID -H "Authorization: Bearer $TOKEN"
-```
-
-A ready-to-run **Postman collection** is in [`postman/`](postman/Athena.postman_collection.json) — Register/Login auto-store the tokens and userId for the protected requests.
-
-### Error contract
-
-Every service returns the same shape on error:
-
-```json
-{
-  "timestamp": "2026-06-12T10:15:30Z",
-  "status": 400,
-  "error": "Bad Request",
-  "message": "Validation failed for one or more fields",
-  "path": "/users",
-  "details": [{ "field": "age", "message": "age must be at least 5" }]
-}
-```
+All endpoints go through the gateway, `http://localhost:8080`. There's no OpenAPI/Swagger
+UI yet (tracked in [`ROADMAP.md`](ROADMAP.md)) — the contract is documented by hand in
+**[`docs/API.md`](docs/API.md)** and **[`docs/Backend.md`](docs/Backend.md)**, with
+runnable examples in the [`postman/`](postman) collections (historical snapshots — see
+the caveat in `docs/API.md`).
 
 ---
 
-## 6. Testing
+## Contributing
 
-```bash
-./mvnw test
-```
-
-- **Service layer** — pure JUnit 5 + Mockito (repositories and Feign client mocked). Streak logic is tested deterministically via an injected `Clock`.
-- **Controllers** — `@WebMvcTest` + MockMvc, service mocked with `@MockitoBean`; covers happy paths, validation 400s, and mapped 401/404/409.
-- **Gateway filter** — verified with WebFlux `MockServerWebExchange`, including the anti-spoofing behaviour.
+Contributions are welcome. Start with **[`CONTRIBUTING.md`](CONTRIBUTING.md)** for the
+fork/branch/PR process and coding conventions, and
+**[`docs/Contributing.md`](docs/Contributing.md)** for the repo-specific build/test
+mechanics. Please also read **[`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md)**.
 
 ---
 
-## 7. Notes, assumptions & future work
+## Development workflow
 
-- **Eureka discovery-server** is included because the requirements specify Eureka; it is infrastructure, not one of the four business services.
-- **Refresh tokens are stateless** (signed, type-checked, re-validated against the current account on use). Server-side revocation/rotation tracking is intentionally deferred to a later version.
-- **`ddl-auto: validate`** — Liquibase owns the schema; Hibernate only checks the mappings match.
-- **Secrets** are environment variables with dev defaults. In any real environment, set `ATHENA_JWT_SECRET` (≥ 32 bytes) and DB credentials via your secret manager. The gateway and auth-service must share the same secret + issuer.
-- **Structured logging** is opt-in: set `LOGGING_STRUCTURED_FORMAT=ecs` (done in compose) for JSON logs; unset for human-readable local logs.
+Fork → feature branch off `master` → commit in focused, descriptive commits → open a PR
+against `master` → CI (`ci.yml`) builds and tests the full reactor → review → merge.
+See `CONTRIBUTING.md` for the specifics (naming, commit style, review expectations).
+
+---
+
+## Roadmap
+
+Tracked in **[`ROADMAP.md`](ROADMAP.md)** — Completed / In Progress / Planned, built only
+from what's verifiably true of the codebase today (uncommitted work, documented
+extension points, and explicitly recommended future work — never invented features).
+
+---
+
+## License
+
+[MIT](LICENSE).
+
+---
+
+## Support
+
+- **Bugs / feature requests**: open a [GitHub Issue](https://github.com/Tamara556/Athena-Backend/issues)
+  using the provided templates.
+- **Security vulnerabilities**: see **[`SECURITY.md`](SECURITY.md)** — please do not
+  file a public issue for a suspected vulnerability.
+- **Questions / design discussion**: GitHub Discussions is recommended but not yet
+  enabled for this repository (see `docs/Contributing.md`) — use an Issue in the
+  meantime.
+
+---
+
+## Acknowledgements
+
+Built on Spring Boot, Spring Cloud, Apache Kafka, Redis, PostgreSQL, pgvector, and
+[LM Studio](https://lmstudio.ai) for fully local LLM inference.
