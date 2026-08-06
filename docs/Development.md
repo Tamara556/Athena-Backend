@@ -44,11 +44,32 @@ list and `.env.example` for the CloudWatch toggle.
 ## Running tests
 
 ```bash
-./mvnw test          # unit + slice tests, all modules
-./mvnw clean verify   # what CI runs (ci.yml)
+./mvnw test           # fast: unit + slice tests only (Surefire), all modules
+./mvnw clean verify   # full suite incl. Testcontainers integration tests (Failsafe) — what CI runs
 ```
 
-Testing conventions observed across the codebase (follow these when adding tests):
+`verify` runs the integration tests (`*IT`), which spin up real containers via
+Testcontainers, so **a running Docker daemon is required**. All images used
+(`postgres:16`, `pgvector/pgvector:pg17`, `confluentinc/cp-kafka`) are standard.
+
+### Test layers
+
+| Layer | File suffix | Runner | What it uses |
+|---|---|---|---|
+| Unit | `*Test` | Surefire | JUnit 5 + Mockito + AssertJ; no I/O |
+| Integration | `*IT` | Failsafe | Testcontainers PostgreSQL/pgvector, real Liquibase + JPA |
+| API | `*IT` | Failsafe | full app on a random port, real HTTP via `RestClient` |
+| Consumer contract | `*IT` | Failsafe | Feign client vs. a stubbed provider (simple-discovery) |
+| Kafka | `*IT` | Failsafe | real broker; producer → `@KafkaListener` → downstream event |
+
+### Coverage
+
+`verify` produces per-module JaCoCo reports plus a reactor-wide **aggregate** at
+`coverage-report/target/site/jacoco-aggregate/index.html` (HTML) and `jacoco.xml`.
+Only bootstrap (`*Application`) and Spring `config/` classes are excluded — never
+business logic.
+
+### Conventions (follow these when adding tests)
 
 - **Service layer** — pure JUnit 5 + Mockito; repositories and Feign clients are mocked.
   Time-dependent logic (streaks, scheduling) is tested deterministically via an injected
@@ -61,6 +82,16 @@ Testing conventions observed across the codebase (follow these when adding tests
   anti-spoofing behavior in `docs/Security.md` §1).
 - LM Studio calls are always mocked at the `athena-llm` provider interface
   (`ChatProvider`/`EmbeddingProvider`) — no test depends on a running model.
+- **Integration tests (`*IT`)** — `@SpringBootTest` with Testcontainers via
+  `@DynamicPropertySource`; disable externals not under test
+  (`eureka.client.enabled=false`, `spring.kafka.listener.auto-startup=false`,
+  `spring.cache.type=none`) and give containers `withStartupTimeout(120s)` so they
+  survive full-build load.
+- **Tooling note (Spring Boot 4 / JDK 26)** — use Spring `RestClient` for HTTP tests
+  (Rest Assured's Groovy stack and `TestRestTemplate`'s old package don't work here), and
+  a JDK `com.sun.net.httpserver.HttpServer` stub for consumer-contract tests (WireMock is
+  not vendored). Testcontainers is pinned to `1.20.5` via a `testcontainers.version`
+  property override in the root POM.
 
 ## Logging
 

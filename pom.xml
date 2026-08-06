@@ -31,6 +31,7 @@
         <module>ai-service</module>
         <module>interview-service</module>
         <module>rag-service</module>
+        <module>coverage-report</module>
     </modules>
 
     <properties>
@@ -40,6 +41,11 @@
         <jjwt.version>0.12.6</jjwt.version>
         <aws.sdk.version>2.31.0</aws.sdk.version>
         <athena-common.version>1.0.0</athena-common.version>
+        <jacoco.version>0.8.15</jacoco.version>
+        <surefireArgLine></surefireArgLine>
+        <failsafeArgLine></failsafeArgLine>
+        <!-- Pin Testcontainers to the stable 1.20.x line (classic module coordinates). -->
+        <testcontainers.version>1.20.5</testcontainers.version>
     </properties>
 
     <dependencyManagement>
@@ -116,12 +122,85 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
-                        <!-- Permit Mockito's dynamic agent attach on modern JDKs without warnings. -->
-                        <argLine>-XX:+EnableDynamicAgentLoading -Xshare:off</argLine>
+                        <!-- @{surefireArgLine} is injected by JaCoCo prepare-agent so the coverage
+                             agent attaches; the rest permits Mockito's dynamic agent on modern JDKs. -->
+                        <argLine>@{surefireArgLine} -XX:+EnableDynamicAgentLoading -Xshare:off</argLine>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <configuration>
+                        <argLine>@{failsafeArgLine} -XX:+EnableDynamicAgentLoading -Xshare:off</argLine>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>integration-test</goal>
+                                <goal>verify</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${jacoco.version}</version>
+                    <configuration>
+                        <excludes>
+                            <!-- Bootstrap + Spring wiring only: no business logic to cover. -->
+                            <exclude>**/*Application.class</exclude>
+                            <exclude>**/config/**</exclude>
+                        </excludes>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>prepare-agent</id>
+                            <goals>
+                                <goal>prepare-agent</goal>
+                            </goals>
+                            <configuration>
+                                <propertyName>surefireArgLine</propertyName>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>prepare-agent-integration</id>
+                            <goals>
+                                <goal>prepare-agent-integration</goal>
+                            </goals>
+                            <configuration>
+                                <propertyName>failsafeArgLine</propertyName>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>report</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>report</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>report-integration</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>report-integration</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+            </plugin>
+        </plugins>
     </build>
 
     <repositories>

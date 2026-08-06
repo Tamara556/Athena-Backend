@@ -6,6 +6,7 @@ import com.athena.llm.model.ChatMessage;
 import com.athena.llm.model.ChatRequest;
 import com.athena.llm.model.ChatResult;
 import com.athena.llm.model.ResponseFormat;
+import com.athena.llm.parser.StructuredOutputParser;
 import com.athena.rag.client.KnowledgeGraphClient;
 import com.athena.rag.client.ProgressClient;
 import com.athena.rag.config.RagProperties;
@@ -112,25 +113,13 @@ public class RecommendationServiceImpl implements RecommendationService {
     }
 
     private NextRecommendationContent parse(String raw) {
-        String json = extractJson(raw);
+        String json = StructuredOutputParser.extract(raw);
         try {
             return objectMapper.readValue(json, NextRecommendationContent.class);
         } catch (RuntimeException ex) {
             metrics.llmFailure();
             throw new LlmException("Could not parse recommendation output", ex);
         }
-    }
-
-    private String extractJson(String raw) {
-        if (raw == null) {
-            throw new LlmException("Empty recommendation output");
-        }
-        int start = raw.indexOf('{');
-        int end = raw.lastIndexOf('}');
-        if (start < 0 || end <= start) {
-            throw new LlmException("Recommendation output did not contain a JSON object");
-        }
-        return raw.substring(start, end + 1);
     }
 
     private String safe(Supplier<String> supplier) {

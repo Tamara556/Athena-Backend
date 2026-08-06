@@ -36,13 +36,18 @@ this exact setup).
 ## Running tests
 
 ```bash
-./mvnw test                    # this module and its dependencies
-./mvnw -pl <module> test       # just this module
-./mvnw clean verify            # the full CI check (ci.yml runs exactly this)
+./mvnw test                    # fast: unit + slice tests only (Surefire)
+./mvnw -pl <module> -am test   # just this module (+ its dependencies)
+./mvnw clean verify            # full suite incl. Testcontainers ITs — the CI check (ci.yml)
 ```
 
-See `docs/Development.md` for the testing conventions (Mockito, `@WebMvcTest`, injected
-`Clock`, mocked LM Studio providers) to follow when adding new tests.
+`verify` runs the integration tests (`*IT`) on real containers, so it needs a running
+**Docker daemon**. Coverage (JaCoCo) is aggregated at
+`coverage-report/target/site/jacoco-aggregate/index.html`.
+
+See `docs/Development.md` for the testing conventions and the five test layers (unit,
+Testcontainers integration, `RestClient` API, Feign consumer-contract, Kafka) to follow
+when adding new tests.
 
 ## Adding a new event
 

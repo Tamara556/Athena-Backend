@@ -1,6 +1,6 @@
 package com.athena.ai.learningsession.service.impl;
 
-import com.athena.ai.client.AiException;
+import com.athena.ai.llm.AiException;
 import com.athena.ai.constants.AiConstants;
 import com.athena.ai.learningsession.domain.SessionStatus;
 import com.athena.ai.learningsession.dto.LearningSessionResponse;

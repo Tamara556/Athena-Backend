@@ -9,4 +9,6 @@ public interface RoadmapService {
     RoadmapResponse getLatestForUser(UUID userId);
 
     RoadmapResponse getById(UUID id);
+
+    RoadmapResponse completePhase(UUID userId, int phaseIndex);
 }
