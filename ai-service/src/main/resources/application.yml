@@ -35,15 +35,18 @@ spring:
     type: redis
 
 athena:
-  ai:
-    base-url: ${ATHENA_AI_BASE_URL:http://localhost:1234/v1}
-    model: ${ATHENA_AI_MODEL:qwen3-14b}
-    connect-timeout: 5s
-    read-timeout: ${ATHENA_AI_READ_TIMEOUT:1200s}
-    max-retries: 2
-    retry-backoff: 2s
-    temperature: 0.4
-    max-tokens: ${ATHENA_AI_MAX_TOKENS:8192}
+  llm:
+    chat:
+      base-url: ${ATHENA_AI_BASE_URL:http://localhost:1234/v1}
+      model: ${ATHENA_AI_MODEL:qwen3-14b}
+      connect-timeout: 5s
+      read-timeout: ${ATHENA_AI_READ_TIMEOUT:1200s}
+      max-retries: 2
+      retry-backoff: 2s
+      temperature: 0.4
+      max-tokens: ${ATHENA_AI_MAX_TOKENS:8192}
+    embedding:
+      base-url: ${ATHENA_AI_BASE_URL:http://localhost:1234/v1}
 
 eureka:
   client:

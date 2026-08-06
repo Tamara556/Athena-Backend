@@ -37,6 +37,12 @@ in-flight change, it's labeled as such.
   generation on a cron already exists, but wiring it to the actual due-user roster is an
   explicitly flagged extension point (`docs/ARCHITECTURE-V3.md` §10); interviews can
   currently only be started on demand via the REST API.
+- **Test-coverage ramp** — the five-layer test suite (unit, Testcontainers integration,
+  `RestClient` API, Feign consumer-contract, Kafka workflow) and JaCoCo reporting are in
+  place (`docs/Development.md` §Running tests); aggregate line coverage is ~42%. Raising
+  it toward the 90% goal is a matter of continuing the established patterns across the
+  remaining service/controller layers, plus adding consumer **idempotency** and a
+  **dead-letter/retry** topology (neither implemented today) and tests for them.
 
 ## Planned (recommended, not implemented)
 

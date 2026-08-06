@@ -1,6 +1,6 @@
 package com.athena.ai.llm;
 
-import com.athena.ai.client.dto.ResponseFormat;
+import com.athena.llm.model.ResponseFormat;
 
 import java.util.UUID;
 

@@ -106,7 +106,7 @@ explicit strengths/weaknesses review lives in **[`docs/Architecture.md`](docs/Ar
 | Object storage | S3-compatible (LocalStack locally) |
 | Observability | Structured (ECS) logging, Micrometer + Brave tracing, optional CloudWatch shipping |
 | Build | Maven (multi-module), Maven Wrapper |
-| Tests | JUnit 5, Mockito, MockMvc, WebFlux `MockServerWebExchange` |
+| Tests | JUnit 5, Mockito, AssertJ, MockMvc; Testcontainers (PostgreSQL/pgvector/Kafka) integration, `RestClient` API tests, Feign consumer-contract tests, Kafka workflow tests; JaCoCo coverage |
 | Containerization | Docker, Docker Compose |
 | Frontend (separate repo) | Angular 20, Signals |
 
@@ -194,6 +194,30 @@ mechanics. Please also read **[`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md)**.
 Fork → feature branch off `master` → commit in focused, descriptive commits → open a PR
 against `master` → CI (`ci.yml`) builds and tests the full reactor → review → merge.
 See `CONTRIBUTING.md` for the specifics (naming, commit style, review expectations).
+
+---
+
+## Testing
+
+The suite spans five layers, all run by `./mvnw clean verify` (exactly what CI runs):
+
+| Layer | Tooling | Runner |
+|---|---|---|
+| Unit | JUnit 5, Mockito, AssertJ (parameterized where it adds value) | Surefire |
+| Integration | Testcontainers — PostgreSQL, **pgvector**, Liquibase, JPA | Failsafe (`*IT`) |
+| API | real HTTP via Spring `RestClient` on a random port + Testcontainers | Failsafe (`*IT`) |
+| Consumer contract | Feign clients vs. a stubbed provider (all four cross-service clients) | Failsafe (`*IT`) |
+| Kafka | real broker (Testcontainers), producer → consumer → producer workflow | Failsafe (`*IT`) |
+
+```bash
+./mvnw test           # fast: unit + slice tests only (Surefire)
+./mvnw clean verify   # everything, including Testcontainers ITs — needs Docker running
+```
+
+Coverage is measured with **JaCoCo**; the reactor-wide aggregate report is written to
+`coverage-report/target/site/jacoco-aggregate/index.html` after `verify`. Integration
+tests (`*IT`) require a running Docker daemon (Testcontainers). See
+**[`docs/Development.md`](docs/Development.md)** for the per-layer conventions.
 
 ---
 

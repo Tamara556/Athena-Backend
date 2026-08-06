@@ -8,6 +8,24 @@ below are reconstructed from git history and the versioned design docs in `docs/
 release notes. Dates are the actual merge dates from git history.
 
 ## [Unreleased]
+- Testing milestone — production-grade, multi-layer test suite and infrastructure:
+  - **JaCoCo** wired across the reactor with a new `coverage-report` aggregator module
+    (HTML + XML at `coverage-report/target/site/jacoco-aggregate/`); **Maven Failsafe**
+    added so `*IT` integration tests run under `verify`.
+  - **Unit** coverage expanded (RAG core, daily-journey algorithms, roadmap/generation/LLM
+    orchestration, `athena-common` exception handling): aggregate line coverage
+    22.5% → 42.2%, with no coverage inflation.
+  - **Integration** (Testcontainers): PostgreSQL + Liquibase repository tests, and a
+    real **pgvector** cosine-similarity search test for `rag-service`.
+  - **API**: full real-HTTP tests via Spring `RestClient` (auth register/login/refresh and
+    an authenticated, header-scoped progress endpoint).
+  - **Consumer contract**: all four cross-service Feign clients verified against a stubbed
+    provider.
+  - **Kafka**: a real-broker event-driven workflow test (produce → consume → downstream
+    publish).
+  - Tooling adapted for Spring Boot 4 / JDK 26 (RestClient over Rest Assured/
+    `TestRestTemplate`; JDK `HttpServer` stub over WireMock; Testcontainers pinned to
+    1.20.5). See `docs/Development.md` §Running tests.
 - Documentation overhaul: rewritten `README.md`, new `docs/` knowledge base
   (`Architecture.md`, `Backend.md`, `API.md`, `Security.md`, `Infrastructure.md`,
   `Development.md`, `Deployment.md`, `Frontend.md`, `Project-Structure.md`,

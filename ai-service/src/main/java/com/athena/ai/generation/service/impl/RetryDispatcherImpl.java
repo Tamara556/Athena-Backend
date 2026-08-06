@@ -1,7 +1,7 @@
 package com.athena.ai.generation.service.impl;
 
-import com.athena.ai.client.AiException;
-import com.athena.ai.client.AiTemporarilyUnavailableException;
+import com.athena.ai.llm.AiException;
+import com.athena.ai.llm.AiTemporarilyUnavailableException;
 import com.athena.ai.constants.AiConstants;
 import com.athena.ai.onboarding.dto.AssessmentAnswer;
 import com.athena.ai.generation.dto.RetryOutcomeResponse;

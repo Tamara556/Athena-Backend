@@ -1,7 +1,7 @@
 package com.athena.ai.web;
 
-import com.athena.ai.client.AiException;
-import com.athena.ai.client.AiTemporarilyUnavailableException;
+import com.athena.ai.llm.AiException;
+import com.athena.ai.llm.AiTemporarilyUnavailableException;
 import com.athena.ai.generation.dto.FallbackResponse;
 import com.athena.common.web.ApiError;
 import com.athena.common.web.GlobalExceptionHandler;

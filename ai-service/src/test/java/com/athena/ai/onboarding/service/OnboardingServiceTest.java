@@ -1,7 +1,7 @@
 package com.athena.ai.onboarding.service;
 
-import com.athena.ai.client.AiException;
-import com.athena.ai.client.AiTemporarilyUnavailableException;
+import com.athena.ai.llm.AiException;
+import com.athena.ai.llm.AiTemporarilyUnavailableException;
 import com.athena.ai.generation.service.AiGenerationService;
 import com.athena.ai.generation.service.AiRetryService;
 import com.athena.ai.knowledgegraph.service.KnowledgeGraphService;

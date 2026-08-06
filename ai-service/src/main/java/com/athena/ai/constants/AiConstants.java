@@ -65,6 +65,14 @@ public final class AiConstants {
     public static final String RESOURCE_VISUALIZATION = "Knowledge graph";
     public static final int SNAPSHOT_SIGNIFICANT_DELTA = 5;
 
+    public static final String METRIC_LLM_LATENCY = "athena.ai.llm.latency";
+    public static final String METRIC_LLM_REQUESTS = "athena.ai.llm.requests";
+    public static final String METRIC_LLM_FAILURES = "athena.ai.llm.failures";
+    public static final String METRIC_LLM_PARSE_FAILURES = "athena.ai.llm.parse.failures";
+    public static final String METRIC_LLM_PROMPT_TOKENS = "athena.ai.llm.prompt.tokens";
+    public static final String METRIC_LLM_COMPLETION_TOKENS = "athena.ai.llm.completion.tokens";
+    public static final String METRIC_TAG_PROMPT = "prompt";
+
     public static final String METRIC_VIZ_GENERATION = "athena.kg.visualization.generation";
     public static final String METRIC_VIZ_REQUESTS = "athena.kg.visualization.requests";
     public static final String METRIC_VIZ_CACHE_MISS = "athena.kg.visualization.cache.miss";
