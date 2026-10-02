@@ -10,5 +10,11 @@ public interface RoadmapService {
 
     RoadmapResponse getById(UUID id);
 
+    /**
+     * Same as {@link #getById(UUID)} but rejects a caller who does not own the
+     * roadmap. Used for gateway-authenticated requests that carry {@code X-User-Id}.
+     */
+    RoadmapResponse getByIdForUser(UUID id, UUID requesterId);
+
     RoadmapResponse completePhase(UUID userId, int phaseIndex);
 }

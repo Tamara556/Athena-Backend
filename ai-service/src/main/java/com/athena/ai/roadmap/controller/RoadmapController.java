@@ -26,9 +26,17 @@ public class RoadmapController {
         return ResponseEntity.ok(roadmapService.getLatestForUser(userId));
     }
 
+    /**
+     * Internal callers (e.g. rag-service Feign) omit {@code X-User-Id} and may
+     * read any roadmap by id. Gateway-authenticated requests always carry the
+     * header, so ownership is enforced for browser/API clients.
+     */
     @GetMapping("/{id}")
-    public ResponseEntity<RoadmapResponse> byId(@PathVariable UUID id) {
-        return ResponseEntity.ok(roadmapService.getById(id));
+    public ResponseEntity<RoadmapResponse> byId(@PathVariable UUID id,
+                                                @RequestHeader(value = AuthHeaders.USER_ID, required = false) UUID userId) {
+        return ResponseEntity.ok(userId == null
+                ? roadmapService.getById(id)
+                : roadmapService.getByIdForUser(id, userId));
     }
 
     @PostMapping("/me/phases/{index}/complete")

@@ -4,6 +4,7 @@ import com.athena.ai.generation.model.RoadmapContent;
 import com.athena.ai.roadmap.dto.RoadmapResponse;
 import com.athena.ai.roadmap.entity.GeneratedRoadmap;
 import com.athena.ai.roadmap.repository.GeneratedRoadmapRepository;
+import com.athena.ai.web.AccessForbiddenException;
 import com.athena.common.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -65,6 +66,27 @@ class RoadmapServiceImplTest {
         UUID id = UUID.randomUUID();
         when(repository.findById(id)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> service().getById(id)).isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void getByIdForUserReturnsOwnedRoadmap() {
+        GeneratedRoadmap stored = roadmap("CURRENT", "AVAILABLE", "LOCKED");
+        when(repository.findById(stored.getId())).thenReturn(Optional.of(stored));
+
+        RoadmapResponse response = service().getByIdForUser(stored.getId(), userId);
+
+        assertThat(response.goal()).isEqualTo("Learn SQL");
+        assertThat(response.phases()).hasSize(3);
+    }
+
+    @Test
+    void getByIdForUserRejectsOtherUser() {
+        GeneratedRoadmap stored = roadmap("CURRENT", "AVAILABLE", "LOCKED");
+        when(repository.findById(stored.getId())).thenReturn(Optional.of(stored));
+
+        assertThatThrownBy(() -> service().getByIdForUser(stored.getId(), UUID.randomUUID()))
+                .isInstanceOf(AccessForbiddenException.class)
+                .hasMessageContaining("own roadmap");
     }
 
     @Test

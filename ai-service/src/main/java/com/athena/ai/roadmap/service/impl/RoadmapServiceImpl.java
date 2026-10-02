@@ -6,6 +6,7 @@ import com.athena.ai.roadmap.entity.GeneratedRoadmap;
 import com.athena.ai.generation.model.RoadmapContent;
 import com.athena.ai.roadmap.repository.GeneratedRoadmapRepository;
 import com.athena.ai.roadmap.service.RoadmapService;
+import com.athena.ai.web.AccessForbiddenException;
 import com.athena.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -38,8 +39,17 @@ public class RoadmapServiceImpl implements RoadmapService {
     @Override
     @Transactional(readOnly = true)
     public RoadmapResponse getById(UUID id) {
-        return toResponse(repository.findById(id)
-                .orElseThrow(() -> ResourceNotFoundException.of(AiConstants.RESOURCE_ROADMAP, id)));
+        return toResponse(require(id));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public RoadmapResponse getByIdForUser(UUID id, UUID requesterId) {
+        GeneratedRoadmap roadmap = require(id);
+        if (!roadmap.getUserId().equals(requesterId)) {
+            throw new AccessForbiddenException("You may only access your own roadmap");
+        }
+        return toResponse(roadmap);
     }
 
     @Override
@@ -82,6 +92,11 @@ public class RoadmapServiceImpl implements RoadmapService {
                     p.name(), p.description(), p.durationWeeks(), p.objectives(), status));
         }
         return result;
+    }
+
+    private GeneratedRoadmap require(UUID id) {
+        return repository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.of(AiConstants.RESOURCE_ROADMAP, id));
     }
 
     private RoadmapResponse toResponse(GeneratedRoadmap roadmap) {
